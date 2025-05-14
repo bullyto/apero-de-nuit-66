@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculateur de prix TTC d'alcool</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Manifest et Service Worker -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1f2937">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker enregistré', reg))
+                    .catch(err => console.error('Erreur SW :', err));
+            });
+        }
+    </script>
+
+    <!-- Icône -->
+    <link rel="icon" href="icon-512.png" sizes="512x512" type="image/png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <!-- Logo -->
+        <div class="flex justify-center mb-4">
+            <img src="https://static.wixstatic.com/media/bc6106_2760d0ad9fe847418ba1d73666102706~mv2.png/v1/fill/w_560,h_320,al_c,lg_1,q_85,enc_avif,quality_auto/apero%20de%20nuit%20n.png" alt="Logo" class="w-48 h-auto">
+        </div>
+        
+        <h1 class="text-2xl font-bold mb-4 text-center">Calculateur de prix TTC - Alcools</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Nom du produit</label>
+                <input id="name" type="text" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Nom du produit">
+            </div>
+            <div>
+                <label for="price" class="block text-sm font-medium text-gray-700">Prix unitaire HT (€)</label>
+                <input id="price" type="number" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Prix HT">
+            </div>
+            <div>
+                <label for="volume" class="block text-sm font-medium text-gray-700">Volume (L)</label>
+                <input id="volume" type="number" step="0.001" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Volume">
+            </div>
+            <div>
+                <label for="degree" class="block text-sm font-medium text-gray-700">Degré d'alcool (%)</label>
+                <input id="degree" type="number" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Degré">
+            </div>
+            <div>
+                <label for="quantity" class="block text-sm font-medium text-gray-700">Quantité (bouteilles)</label>
+                <input id="quantity" type="number" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Quantité">
+            </div>
+        </div>
+
+        <div class="mt-4 space-x-2 flex justify-center">
+            <button id="addBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Ajouter</button>
+            <button id="undoBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Annuler</button>
+            <button id="clearBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Effacer tout</button>
+        </div>
+
+        <div class="mt-6">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Produit</th>
+                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Prix HT total</th>
+                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">TVA 20 %</th>
+                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">CSS</th>
+                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">TVA CSS 20 %</th>
+                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Total TTC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="product-list" class="divide-y divide-gray-200 bg-white"></tbody>
+                </table>
+            </div>
+            <div class="text-right font-bold mt-4">
+                Total général TTC : <span id="grand-total">0.00</span> €
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+
+        function addProduct() {
+            const name = document.getElementById("name").value;
+            const price = parseFloat(document.getElementById("price").value);
+            const volume = parseFloat(document.getElementById("volume").value);
+            const degree = parseFloat(document.getElementById("degree").value);
+            const quantity = parseInt(document.getElementById("quantity").value);
+
+            if (!name || isNaN(price) || isNaN(volume) || isNaN(degree) || isNaN(quantity)) {
+                alert("Veuillez remplir tous les champs correctement !");
+                return;
+            }
+
+            const priceHTTotal = price * quantity;
+            const vatHT = priceHTTotal * 0.20;
+            const volumeAlcoolPur = volume * (degree / 100);
+            const hlap = volumeAlcoolPur / 100;
+            const cssAmount = hlap * 609.80 * quantity;
+            const vatCSS = cssAmount * 0.20;
+            const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
+
+            products.push({ name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC });
+            renderTable();
+
+            document.getElementById("name").value = "";
+            document.getElementById("price").value = "";
+            document.getElementById("volume").value = "";
+            document.getElementById("degree").value = "";
+            document.getElementById("quantity").value = "";
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("product-list");
+            tbody.innerHTML = "";
+            let grandTotal = 0;
+
+            products.forEach((p) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td class="px-4 py-2">${p.name}</td>
+                    <td class="px-4 py-2 text-right">${p.priceHTTotal.toFixed(2)} €</td>
+                    <td class="px-4 py-2 text-right">${p.vatHT.toFixed(2)} €</td>
+                    <td class="px-4 py-2 text-right">${p.cssAmount.toFixed(2)} €</td>
+                    <td class="px-4 py-2 text-right">${p.vatCSS.toFixed(2)} €</td>
+                    <td class="px-4 py-2 text-right">${p.totalTTC.toFixed(2)} €</td>
+                `;
+                tbody.appendChild(row);
+                grandTotal += p.totalTTC;
+            });
+
+            document.getElementById("grand-total").textContent = grandTotal.toFixed(2);
+        }
+
+        function removeLast() {
+            products.pop();
+            renderTable();
+        }
+
+        function clearAll() {
+            products = [];
+            renderTable();
+        }
+
+        document.getElementById("addBtn").addEventListener("click", addProduct);
+        document.getElementById("undoBtn").addEventListener("click", removeLast);
+        document.getElementById("clearBtn").addEventListener("click", clearAll);
+    </script>
+</body>
+</html>
