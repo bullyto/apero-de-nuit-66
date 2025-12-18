@@ -51,6 +51,16 @@
             });
         }
   </script>
+
+<style>
+/* UI épurée : masquage VISUEL uniquement (logique inchangée) */
+.bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
+.mt-1.text-sm.text-white\/70 { display:none !important; }
+.glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
+.mt-4.text-xs.text-white\/55 { display:none !important; }
+footer.mt-8 { display:none !important; }
+</style>
+
 </head>
 
 <body class="min-h-screen bg-neon text-white">
@@ -102,11 +112,6 @@
     <main class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Form card -->
       <section class="lg:col-span-5 glass ring-neon rounded-3xl p-5 md:p-6">
-        <h2 class="text-base font-bold tracking-wide text-white/90">Ajouter un produit</h2>
-        <p class="mt-1 text-sm text-white/65">
-          Remplis les champs ci-dessous, puis clique sur <span class="font-semibold text-white/85">Ajouter</span>.
-        </p>
-
         <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label for="name" class="block text-xs font-semibold text-white/70">Nom du produit</label>
