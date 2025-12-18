@@ -119,7 +119,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       <!-- Form card -->
       <section class="lg:col-span-5 glass ring-neon rounded-3xl p-5 md:p-6">
         <div class="mt-3 flex gap-2">
-          <button id="modeAlcohol" type="button"
+          <button id="btn-clear" type="button" id="btn-cancel" type="button" id="btn-add" type="button" id="modeAlcohol" type="button"
             class="px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/20 border border-white/15 text-sm font-semibold">
             Alcool
           </button>
@@ -198,7 +198,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h2 class="text-base font-bold tracking-wide text-white/90">Détail du calcul</h2>
-            <p class="mt-1 text-sm text-white/65">TVA HT, CSS, TVA CSS et total TTC.</p>
+            <p class="mt-1 text-sm text-white/65">TVA HT, CSS, TVA CSS et total TTC par produit.</p>
           </div>
 
           <div class="glass rounded-2xl px-4 py-3">
@@ -412,5 +412,40 @@ function removeLast() {
 
     renderTable();
   </script>
+<script>
+(function(){
+  function bind(){
+    var addBtn = document.getElementById('btn-add');
+    var cancelBtn = document.getElementById('btn-cancel');
+    var clearBtn = document.getElementById('btn-clear');
+
+    function safeCall(fn){
+      try{ fn(); }
+      catch(err){
+        console.error(err);
+        alert('Erreur JS: ' + (err && err.message ? err.message : err));
+      }
+    }
+
+    if(addBtn){
+      addBtn.addEventListener('click', function(e){ e.preventDefault(); safeCall(function(){ addProduct(); }); }, {passive:false});
+      addBtn.addEventListener('touchend', function(e){ e.preventDefault(); safeCall(function(){ addProduct(); }); }, {passive:false});
+    }
+    if(cancelBtn){
+      cancelBtn.addEventListener('click', function(e){ e.preventDefault(); safeCall(function(){ removeLast(); }); }, {passive:false});
+      cancelBtn.addEventListener('touchend', function(e){ e.preventDefault(); safeCall(function(){ removeLast(); }); }, {passive:false});
+    }
+    if(clearBtn){
+      clearBtn.addEventListener('click', function(e){ e.preventDefault(); if(confirm('Tout effacer ?')) safeCall(function(){ clearAll(); }); }, {passive:false});
+      clearBtn.addEventListener('touchend', function(e){ e.preventDefault(); if(confirm('Tout effacer ?')) safeCall(function(){ clearAll(); }); }, {passive:false});
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
+</script>
 </body>
 </html>
