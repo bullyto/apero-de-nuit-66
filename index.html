@@ -1,157 +1,325 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Calculateur de prix TTC d'alcool</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Apéro de Nuit 66 — Calculateur TTC Alcools</title>
 
-    <!-- Manifest et Service Worker -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1f2937">
-    <script>
-        if ('serviceWorker' in navigator) {
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" href="icon-512.png" sizes="512x512" type="image/png" />
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* Petit polish marketing (sans dépendances) */
+    .bg-neon {
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(56,189,248,.22), transparent 60%),
+        radial-gradient(900px 500px at 85% 15%, rgba(34,197,94,.20), transparent 55%),
+        radial-gradient(900px 600px at 50% 95%, rgba(168,85,247,.14), transparent 55%),
+        linear-gradient(180deg, #050914 0%, #0b1220 40%, #0b1220 100%);
+    }
+    .glass {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(10px);
+    }
+    .ring-neon {
+      box-shadow: 0 0 0 1px rgba(56,189,248,.18), 0 0 40px rgba(56,189,248,.12);
+    }
+    .btn {
+      transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn { transition: none; }
+    }
+  </style>
+
+  <script>
+    if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
                     .then(reg => console.log('Service Worker enregistré', reg))
                     .catch(err => console.error('Erreur SW :', err));
             });
         }
-    </script>
-
-    <!-- Icône -->
-    <link rel="icon" href="icon-512.png" sizes="512x512" type="image/png">
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  </script>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-        <!-- Logo -->
-        <div class="flex justify-center mb-4">
-            <img src="https://static.wixstatic.com/media/bc6106_2760d0ad9fe847418ba1d73666102706~mv2.png/v1/fill/w_560,h_320,al_c,lg_1,q_85,enc_avif,quality_auto/apero%20de%20nuit%20n.png" alt="Logo" class="w-48 h-auto">
-        </div>
-        
-        <h1 class="text-2xl font-bold mb-4 text-center">Calculateur de prix TTC - Alcools</h1>
 
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-                <label for="name" class="block text-sm font-medium text-gray-700">Nom du produit</label>
-                <input id="name" type="text" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Nom du produit">
+<body class="min-h-screen bg-neon text-white">
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <header class="glass ring-neon rounded-3xl px-5 py-5 md:px-7 md:py-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="shrink-0">
+            <img
+              src="https://static.wixstatic.com/media/bc6106_2760d0ad9fe847418ba1d73666102706~mv2.png/v1/fill/w_560,h_320,al_c,lg_1,q_85,enc_avif,quality_auto/apero%20de%20nuit%20n.png"
+              alt="Apéro de Nuit 66"
+              class="h-14 w-auto drop-shadow"
+              onerror="this.onerror=null;this.src='icon-192.png';"
+            />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide">
+                Apéro de Nuit 66 • PWA
+              </span>
+              <span class="hidden sm:inline-flex items-center rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-200">
+                Calcul TTC + taxes
+              </span>
             </div>
-            <div>
-                <label for="price" class="block text-sm font-medium text-gray-700">Prix unitaire HT (€)</label>
-                <input id="price" type="number" step="0.01" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Prix HT">
-            </div>
-            <div>
-                <label for="volume" class="block text-sm font-medium text-gray-700">Volume (L)</label>
-                <input id="volume" type="number" step="0.001" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Volume">
-            </div>
-            <div>
-                <label for="degree" class="block text-sm font-medium text-gray-700">Degré d'alcool (%)</label>
-                <input id="degree" type="number" step="0.1" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Degré">
-            </div>
-            <div>
-                <label for="quantity" class="block text-sm font-medium text-gray-700">Quantité (bouteilles)</label>
-                <input id="quantity" type="number" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Quantité">
-            </div>
-        </div>
-
-        <div class="mt-4 space-x-2 flex justify-center">
-            <button id="addBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Ajouter</button>
-            <button id="undoBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Annuler</button>
-            <button id="clearBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Effacer tout</button>
+            <h1 class="mt-2 text-xl md:text-2xl font-extrabold leading-tight">
+              Calculateur de prix TTC — Alcools
+            </h1>
+            <p class="mt-1 text-sm text-white/70">
+              Ajoute tes produits, vérifie TVA + CSS, et garde tout enregistré <span class="font-semibold text-white/80">en local</span> jusqu’à effacement.
+            </p>
+          </div>
         </div>
 
-        <div class="mt-6">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Produit</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Prix HT total</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">TVA 20 %</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">CSS</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">TVA CSS 20 %</th>
-                            <th class="px-4 py-2 text-right text-sm font-medium text-gray-700">Total TTC</th>
-                        </tr>
-                    </thead>
-                    <tbody id="product-list" class="divide-y divide-gray-200 bg-white"></tbody>
-                </table>
-            </div>
-            <div class="text-right font-bold mt-4">
-                Total général TTC : <span id="grand-total">0.00</span> €
-            </div>
+        <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <div class="glass rounded-2xl px-4 py-3 text-sm">
+            <div class="text-white/60">Stockage</div>
+            <div class="font-semibold">LocalStorage (persistant)</div>
+          </div>
+          <div class="glass rounded-2xl px-4 py-3 text-sm">
+            <div class="text-white/60">Astuce</div>
+            <div class="font-semibold">“Effacer tout” remet à zéro</div>
+          </div>
         </div>
-    </div>
+      </div>
+    </header>
 
-    <script>
-        let products = [];
+    <!-- Main -->
+    <main class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Form card -->
+      <section class="lg:col-span-5 glass ring-neon rounded-3xl p-5 md:p-6">
+        <h2 class="text-base font-bold tracking-wide text-white/90">Ajouter un produit</h2>
+        <p class="mt-1 text-sm text-white/65">
+          Remplis les champs ci-dessous, puis clique sur <span class="font-semibold text-white/85">Ajouter</span>.
+        </p>
 
-        function addProduct() {
-            const name = document.getElementById("name").value;
-            const price = parseFloat(document.getElementById("price").value);
-            const volume = parseFloat(document.getElementById("volume").value);
-            const degree = parseFloat(document.getElementById("degree").value);
-            const quantity = parseInt(document.getElementById("quantity").value);
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label for="name" class="block text-xs font-semibold text-white/70">Nom du produit</label>
+            <input id="name" type="text"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: Vodka 70 cl"
+            />
+          </div>
 
-            if (!name || isNaN(price) || isNaN(volume) || isNaN(degree) || isNaN(quantity)) {
-                alert("Veuillez remplir tous les champs correctement !");
-                return;
-            }
+          <div>
+            <label for="price" class="block text-xs font-semibold text-white/70">Prix unitaire HT (€)</label>
+            <input id="price" type="number" step="0.01" inputmode="decimal"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 12.90"
+            />
+          </div>
 
-            const priceHTTotal = price * quantity;
-            const vatHT = priceHTTotal * 0.20;
-            const volumeAlcoolPur = volume * (degree / 100);
-            const hlap = volumeAlcoolPur / 100;
-            const cssAmount = hlap * 609.80 * quantity;
-            const vatCSS = cssAmount * 0.20;
-            const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
+          <div>
+            <label for="volume" class="block text-xs font-semibold text-white/70">Volume (L)</label>
+            <input id="volume" type="number" step="0.01" inputmode="decimal"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 0.70"
+            />
+          </div>
 
-            products.push({ name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC });
-            renderTable();
+          <div>
+            <label for="degree" class="block text-xs font-semibold text-white/70">Degré (%)</label>
+            <input id="degree" type="number" step="0.1" inputmode="decimal"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 40"
+            />
+          </div>
 
-            document.getElementById("name").value = "";
-            document.getElementById("price").value = "";
-            document.getElementById("volume").value = "";
-            document.getElementById("degree").value = "";
-            document.getElementById("quantity").value = "";
+          <div>
+            <label for="quantity" class="block text-xs font-semibold text-white/70">Quantité</label>
+            <input id="quantity" type="number" step="1" inputmode="numeric"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 6"
+            />
+          </div>
+        </div>
+
+        <div class="mt-5 flex flex-col sm:flex-row gap-3">
+          <button id="addBtn"
+            class="btn flex-1 rounded-2xl bg-sky-400/20 hover:bg-sky-400/30 border border-sky-300/30 px-4 py-3 font-bold">
+            ➕ Ajouter
+          </button>
+          <button id="undoBtn"
+            class="btn flex-1 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 px-4 py-3 font-semibold">
+            ↩️ Annuler
+          </button>
+          <button id="clearBtn"
+            class="btn flex-1 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/30 px-4 py-3 font-semibold">
+            🗑️ Effacer tout
+          </button>
+        </div>
+
+        <div class="mt-4 text-xs text-white/55">
+          Les données sont stockées <span class="font-semibold text-white/70">sur ton appareil</span> (LocalStorage). Rien n’est envoyé sur internet.
+        </div>
+      </section>
+
+      <!-- Table card -->
+      <section class="lg:col-span-7 glass ring-neon rounded-3xl p-5 md:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold tracking-wide text-white/90">Détail du calcul</h2>
+            <p class="mt-1 text-sm text-white/65">TVA HT, CSS, TVA CSS et total TTC par produit.</p>
+          </div>
+
+          <div class="glass rounded-2xl px-4 py-3">
+            <div class="text-xs text-white/60">Total général TTC</div>
+            <div class="text-2xl font-extrabold tracking-tight">
+              <span id="grand-total">0.00</span> €
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 overflow-x-auto rounded-2xl border border-white/10">
+          <table class="min-w-full text-sm">
+            <thead class="bg-white/5 text-white/80">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold">Produit</th>
+                <th class="px-4 py-3 text-right font-semibold">Total HT</th>
+                <th class="px-4 py-3 text-right font-semibold">TVA (20%)</th>
+                <th class="px-4 py-3 text-right font-semibold">CSS</th>
+                <th class="px-4 py-3 text-right font-semibold">TVA CSS</th>
+                <th class="px-4 py-3 text-right font-semibold">Total TTC</th>
+              </tr>
+            </thead>
+            <tbody id="product-table" class="divide-y divide-white/10 bg-black/10">
+              <!-- rows injected -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-xs text-white/55">
+          💡 Conseil : si tu veux “repartir à zéro”, utilise <span class="font-semibold text-white/75">Effacer tout</span> (ça supprime aussi la sauvegarde locale).
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-8 pb-6 text-center text-xs text-white/45">
+      © Apéro de Nuit 66 — Mini PWA interne • Calculs affichés à titre indicatif
+    </footer>
+  </div>
+
+  <script>
+    // === Stockage local (persistant) — ne change PAS la logique de calcul ===
+    const STORAGE_KEY = "apero_de_nuit_66_calculateur_ttc_products_v1";
+    let products = [];
+
+    function saveProducts() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      } catch (e) {
+        // Si stockage plein ou bloqué, on garde juste en mémoire
+        console.warn("LocalStorage indisponible :", e);
+      }
+    }
+
+    function loadProducts() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) products = parsed;
         }
+      } catch (e) {
+        products = [];
+      }
+    }
 
-        function renderTable() {
-            const tbody = document.getElementById("product-list");
-            tbody.innerHTML = "";
-            let grandTotal = 0;
+    function addProduct() {
+      const name = document.getElementById("name").value;
+      const price = parseFloat(document.getElementById("price").value);
+      const volume = parseFloat(document.getElementById("volume").value);
+      const degree = parseFloat(document.getElementById("degree").value);
+      const quantity = parseInt(document.getElementById("quantity").value);
 
-            products.forEach((p) => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td class="px-4 py-2">${p.name}</td>
-                    <td class="px-4 py-2 text-right">${p.priceHTTotal.toFixed(2)} €</td>
-                    <td class="px-4 py-2 text-right">${p.vatHT.toFixed(2)} €</td>
-                    <td class="px-4 py-2 text-right">${p.cssAmount.toFixed(2)} €</td>
-                    <td class="px-4 py-2 text-right">${p.vatCSS.toFixed(2)} €</td>
-                    <td class="px-4 py-2 text-right">${p.totalTTC.toFixed(2)} €</td>
-                `;
-                tbody.appendChild(row);
-                grandTotal += p.totalTTC;
-            });
+      if (!name || isNaN(price) || isNaN(volume) || isNaN(degree) || isNaN(quantity)) {
+        alert("Veuillez remplir tous les champs correctement !");
+        return;
+      }
 
-            document.getElementById("grand-total").textContent = grandTotal.toFixed(2);
-        }
+      // --- Logique de calcul INCHANGÉE ---
+      const priceHTTotal = price * quantity;
+      const vatHT = priceHTTotal * 0.20;
+      const volumeAlcoolPur = volume * (degree / 100);
+      const hlap = volumeAlcoolPur / 100;
+      const cssAmount = hlap * 609.80 * quantity;
+      const vatCSS = cssAmount * 0.20;
+      const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
+      // ----------------------------------
 
-        function removeLast() {
-            products.pop();
-            renderTable();
-        }
+      products.push({ name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC });
+      saveProducts();
+      renderTable();
 
-        function clearAll() {
-            products = [];
-            renderTable();
-        }
+      // Reset inputs
+      document.getElementById("name").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("volume").value = "";
+      document.getElementById("degree").value = "";
+      document.getElementById("quantity").value = "";
+    }
 
-        document.getElementById("addBtn").addEventListener("click", addProduct);
-        document.getElementById("undoBtn").addEventListener("click", removeLast);
-        document.getElementById("clearBtn").addEventListener("click", clearAll);
-    </script>
+    function renderTable() {
+      const table = document.getElementById("product-table");
+      table.innerHTML = "";
+
+      let grandTotal = 0;
+
+      products.forEach((p) => {
+        grandTotal += p.totalTTC;
+
+        const row = document.createElement("tr");
+        row.className = "hover:bg-white/5";
+
+        row.innerHTML = `
+          <td class="px-4 py-3 font-semibold text-white/90">${p.name}</td>
+          <td class="px-4 py-3 text-right text-white/80">${p.priceHTTotal.toFixed(2)} €</td>
+          <td class="px-4 py-3 text-right text-white/80">${p.vatHT.toFixed(2)} €</td>
+          <td class="px-4 py-3 text-right text-white/80">${p.cssAmount.toFixed(2)} €</td>
+          <td class="px-4 py-3 text-right text-white/80">${p.vatCSS.toFixed(2)} €</td>
+          <td class="px-4 py-3 text-right font-extrabold text-white">${p.totalTTC.toFixed(2)} €</td>
+        `;
+        table.appendChild(row);
+      });
+
+      document.getElementById("grand-total").textContent = grandTotal.toFixed(2);
+    }
+
+    function removeLast() {
+      if (products.length === 0) return;
+      products.pop();
+      saveProducts();
+      renderTable();
+    }
+
+    function clearAll() {
+      products = [];
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+      renderTable();
+    }
+
+    document.getElementById("addBtn").addEventListener("click", addProduct);
+    document.getElementById("undoBtn").addEventListener("click", removeLast);
+    document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+    // Chargement initial depuis LocalStorage
+    loadProducts();
+    renderTable();
+  </script>
 </body>
 </html>
