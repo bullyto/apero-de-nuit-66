@@ -198,7 +198,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
         <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <div>
             <h2 class="text-base font-bold tracking-wide text-white/90">Détail du calcul</h2>
-            <p class="mt-1 text-sm text-white/65">TVA HT, CSS, TVA CSS et total TTC par produit.</p>
+            <p class="mt-1 text-sm text-white/65">TVA HT, CSS, TVA CSS et total TTC.</p>
           </div>
 
           <div class="glass rounded-2xl px-4 py-3">
@@ -292,7 +292,42 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       }
     }
 
-    function addProduct() {
+    
+    // Format € (FR)
+    const _eur = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+    function fmtEUR(v){
+      const n = Number(v);
+      return _eur.format(isFinite(n) ? n : 0);
+    }
+
+    // Rafraîchit le tableau + total général (TTC)
+    function renderTable(){
+      const tbody = document.getElementById("product-table");
+      const totalEl = document.getElementById("grand-total");
+      if(!tbody || !totalEl) return;
+
+      tbody.innerHTML = "";
+      let grand = 0;
+
+      for(const p of products){
+        grand += Number(p.totalTTC || 0);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-left text-white/90">${p.name ?? ""}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.priceHTTotal)}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.vatHT)}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.cssAmount)}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.vatCSS)}</td>
+          <td class="px-4 py-3 text-right font-semibold">${fmtEUR(p.totalTTC)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      totalEl.textContent = fmtEUR(grand);
+    }
+
+function addProduct() {
       const name = document.getElementById("name").value?.trim();
       const price = parseFloat(document.getElementById("price").value);
       const quantity = parseInt(document.getElementById("quantity").value);
