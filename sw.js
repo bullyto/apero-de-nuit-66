@@ -1,4 +1,4 @@
-const CACHE_NAME = "apero-ttc-v3";
+const CACHE_NAME = "Calculateur-v4";
 const PRECACHE_URLS = [
   "./",
   "index.html",
