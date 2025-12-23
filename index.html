@@ -34,38 +34,82 @@
     .btn {
       transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
     }
-    .btn:active {
-      transform: translateY(1px);
+    .btn:active { transform: translateY(1px); }
+    @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+
+    /* ===== Barre de chargement (sans boutons) ===== */
+    .load-wrap{
+      width: 100%;
+      max-width: 260px;
+      margin-top: 8px;
     }
-    @media (prefers-reduced-motion: reduce) {
-      .btn { transition: none; }
+    .load-label{
+      display:flex;
+      justify-content:flex-end;
+      font-size:12px;
+      color: rgba(255,255,255,.70);
+      line-height: 1;
+      margin-bottom: 6px;
+      user-select:none;
+    }
+    .load-track{
+      width:100%;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border: 1px solid rgba(255,255,255,.10);
+      overflow:hidden;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.45);
+    }
+    .load-bar{
+      height:100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(56,189,248,.95), rgba(34,211,238,.95));
+      box-shadow: 0 0 18px rgba(56,189,248,.28);
+      position: relative;
+    }
+    .load-bar::after{
+      content:"";
+      position:absolute;
+      inset: 2px 6px auto 6px;
+      height: 42%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255,255,255,.28), rgba(255,255,255,0));
+      opacity:.75;
+      pointer-events:none;
+    }
+    .load-hide{
+      opacity:0;
+      transform: translateY(-4px);
+      transition: opacity .25s ease, transform .25s ease;
+      pointer-events:none;
     }
   </style>
 
   <script>
     if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker enregistré', reg))
-                    .catch(err => console.error('Erreur SW :', err));
-            });
-        }
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker enregistré', reg))
+          .catch(err => console.error('Erreur SW :', err));
+      });
+    }
   </script>
 
-<style>
-/* UI épurée : masquage VISUEL uniquement (logique inchangée) */
-.bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
-.mt-1.text-sm.text-white\/70 { display:none !important; }
-.glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
-.mt-4.text-xs.text-white\/55 { display:none !important; }
-footer.mt-8 { display:none !important; }
-</style>
+  <style>
+    /* UI épurée : masquage VISUEL uniquement (logique inchangée) */
+    .bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
+    .mt-1.text-sm.text-white\/70 { display:none !important; }
+    .glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
+    .mt-4.text-xs.text-white\/55 { display:none !important; }
+    footer.mt-8 { display:none !important; }
+  </style>
 
-
-<style>
-/* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
-header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
-</style>
+  <style>
+    /* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
+    header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
+  </style>
 
 </head>
 
@@ -83,6 +127,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
               onerror="this.onerror=null;this.src='icon-192.png';"
             />
           </div>
+
           <div>
             <div class="flex items-center gap-2">
               <span class="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide">
@@ -92,12 +137,22 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
                 Calcul TTC + taxes
               </span>
             </div>
+
             <h1 class="mt-2 text-xl md:text-2xl font-extrabold leading-tight">
-              Calculateur TTC 
+              Calculateur TTC
             </h1>
+
             <p class="mt-1 text-sm text-white/70">
               Ajoute tes produits, vérifie TVA + CSS, et garde tout enregistré <span class="font-semibold text-white/80">en local</span> jusqu’à effacement.
             </p>
+
+            <!-- ✅ Barre de chargement sous l'icône (démarrage) -->
+            <div id="loadWrap" class="load-wrap" aria-label="Chargement">
+              <div class="load-label"><span id="loadPct">0%</span></div>
+              <div class="load-track">
+                <div id="loadBar" class="load-bar"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -129,288 +184,8 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
           </button>
         </div>
 
-
-
         <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
             <label for="name" class="block text-xs font-semibold text-white/70">Nom du produit</label>
             <input id="name" type="text"
-              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
-              placeholder="Ex: Vodka 70 cl"
-            />
-          </div>
-
-          <div>
-            <label for="price" class="block text-xs font-semibold text-white/70">Prix unitaire HT (€)</label>
-            <input id="price" type="number" step="0.01" inputmode="decimal"
-              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
-              placeholder="Ex: 12.90"
-            />
-          </div>
-
-          <div id="volumeField">
-            <label for="volume" class="block text-xs font-semibold text-white/70">Volume (L)</label>
-            <input id="volume" type="number" step="0.01" inputmode="decimal"
-              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
-              placeholder="Ex: 0.70"
-            />
-          </div>
-
-          <div id="degreeField">
-            <label for="degree" class="block text-xs font-semibold text-white/70">Degré (%)</label>
-            <input id="degree" type="number" step="0.1" inputmode="decimal"
-              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
-              placeholder="Ex: 40"
-            />
-          </div>
-
-          <div>
-            <label for="quantity" class="block text-xs font-semibold text-white/70">Quantité</label>
-            <input id="quantity" type="number" step="1" inputmode="numeric"
-              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
-              placeholder="Ex: 6"
-            />
-          </div>
-        </div>
-
-        <div class="mt-5 flex flex-col sm:flex-row gap-3">
-          <button id="addBtn"
-            class="btn flex-1 rounded-2xl bg-sky-400/20 hover:bg-sky-400/30 border border-sky-300/30 px-4 py-3 font-bold">
-            ➕ Ajouter
-          </button>
-          <button id="undoBtn"
-            class="btn flex-1 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 px-4 py-3 font-semibold">
-            ↩️ Annuler
-          </button>
-          <button id="clearBtn"
-            class="btn flex-1 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/30 px-4 py-3 font-semibold">
-            🗑️ Effacer tout
-          </button>
-        </div>
-
-        <div class="mt-4 text-xs text-white/55">
-          Les données sont stockées <span class="font-semibold text-white/70">sur ton appareil</span> (LocalStorage). Rien n’est envoyé sur internet.
-        </div>
-      </section>
-
-      <!-- Table card -->
-      <section class="lg:col-span-7 glass ring-neon rounded-3xl p-5 md:p-6">
-        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-          <div>
-            <h2 class="text-base font-bold tracking-wide text-white/90">Détail du calcul</h2>
-            <p class="mt-1 text-sm text-white/65">TVA HT, CSS, TVA CSS et total TTC.</p>
-          </div>
-
-          <div class="glass rounded-2xl px-4 py-3">
-            <div class="text-xs text-white/60">Total général TTC</div>
-            <div class="text-2xl font-extrabold tracking-tight">
-              <span id="grand-total">0.00</span> €
-            </div>
-          </div>
-        </div>
-
-        <div class="mt-5 overflow-x-auto rounded-2xl border border-white/10">
-          <table class="min-w-full text-sm">
-            <thead class="bg-white/5 text-white/80">
-              <tr>
-                <th class="px-4 py-3 text-left font-semibold">Produit</th>
-                <th class="px-4 py-3 text-right font-semibold">Total HT</th>
-                <th class="px-4 py-3 text-right font-semibold">TVA</th>
-                <th class="px-4 py-3 text-right font-semibold">CSS</th>
-                <th class="px-4 py-3 text-right font-semibold">TVA CSS</th>
-                <th class="px-4 py-3 text-right font-semibold">Total TTC</th>
-              </tr>
-            </thead>
-            <tbody id="product-table" class="divide-y divide-white/10 bg-black/10">
-              <!-- rows injected -->
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mt-4 text-xs text-white/55">
-          💡 Conseil : si tu veux “repartir à zéro”, utilise <span class="font-semibold text-white/75">Effacer tout</span> (ça supprime aussi la sauvegarde locale).
-        </div>
-      </section>
-    </main>
-
-    <footer class="mt-8 pb-6 text-center text-xs text-white/45">
-      © Apéro de Nuit 66
-    </footer>
-  </div>
-
-  <script>
-    // === Stockage local (persistant) — ne change PAS la logique de calcul ===
-    const STORAGE_KEY = "apero_de_nuit_66_calculateur_ttc_products_v1";
-    let products = [];
-
-    // Mode de saisie : alcool (calcul complet) ou soda (TVA réduite, pas de CSS)
-    let currentMode = "alcohol"; // "alcohol" | "soda"
-
-    function applyMode(mode){
-      currentMode = (mode === "soda") ? "soda" : "alcohol";
-      const vol = document.getElementById("volumeField");
-      const deg = document.getElementById("degreeField");
-      const bA = document.getElementById("modeAlcohol");
-      const bS = document.getElementById("modeSoda");
-
-      // Classes (évite les remplacements fragiles)
-      const activeCls = "px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/20 border border-white/15 text-sm font-semibold";
-      const inactiveCls = "px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white/80";
-
-      if(currentMode === "soda"){
-        if(vol) vol.style.display = "none";
-        if(deg) deg.style.display = "none";
-        if(bA) bA.className = inactiveCls;
-        if(bS) bS.className = activeCls;
-      } else {
-        if(vol) vol.style.display = "";
-        if(deg) deg.style.display = "";
-        if(bA) bA.className = activeCls;
-        if(bS) bS.className = inactiveCls;
-      }
-    }
-
-
-    function saveProducts() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-      } catch (e) {
-        // Si stockage plein ou bloqué, on garde juste en mémoire
-        console.warn("LocalStorage indisponible :", e);
-      }
-    }
-
-    function loadProducts() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) products = parsed;
-        }
-      } catch (e) {
-        products = [];
-      }
-    }
-
-    
-    // Format € (FR)
-    const _eur = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
-    function fmtEUR(v){
-      const n = Number(v);
-      return _eur.format(isFinite(n) ? n : 0);
-    }
-
-    // Rafraîchit le tableau + total général (TTC)
-    function renderTable(){
-      const tbody = document.getElementById("product-table");
-      const totalEl = document.getElementById("grand-total");
-      if(!tbody || !totalEl) return;
-
-      tbody.innerHTML = "";
-      let grand = 0;
-
-      for(const p of products){
-        grand += Number(p.totalTTC || 0);
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="px-4 py-3 text-left text-white/90">${p.name ?? ""}</td>
-          <td class="px-4 py-3 text-right">${fmtEUR(p.priceHTTotal)}</td>
-          <td class="px-4 py-3 text-right">${fmtEUR(p.vatHT)}</td>
-          <td class="px-4 py-3 text-right">${fmtEUR(p.cssAmount)}</td>
-          <td class="px-4 py-3 text-right">${fmtEUR(p.vatCSS)}</td>
-          <td class="px-4 py-3 text-right font-semibold">${fmtEUR(p.totalTTC)}</td>
-        `;
-        tbody.appendChild(tr);
-      }
-
-      totalEl.textContent = fmtEUR(grand);
-    }
-
-function addProduct() {
-      const name = document.getElementById("name").value?.trim();
-      const price = parseFloat(document.getElementById("price").value);
-      const quantity = parseInt(document.getElementById("quantity").value);
-
-      // Champs spécifiques alcool
-      const volume = parseFloat(document.getElementById("volume").value);
-      const degree = parseFloat(document.getElementById("degree").value);
-
-      if (!name || isNaN(price) || isNaN(quantity)) {
-        alert("Veuillez remplir le nom, le prix HT et la quantité.");
-        return;
-      }
-
-      if (currentMode === "alcohol" && (isNaN(volume) || isNaN(degree))) {
-        alert("Mode alcool : merci de renseigner aussi le volume et le degré.");
-        return;
-      }
-
-      // --- Calcul ---
-      const priceHTTotal = price * quantity;
-
-      if (currentMode === "soda") {
-        // TVA réduite (par défaut 5,5% pour boissons non alcoolisées en contenants de conservation)
-        const vatRate = 0.055;
-        const vatHT = priceHTTotal * vatRate;
-        const cssAmount = 0;
-        const vatCSS = 0;
-        const totalTTC = priceHTTotal + vatHT;
-
-        products.push({ type:"soda", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate });
-      } else {
-        // Alcool : logique d'origine (TVA 20% + CSS + TVA sur CSS)
-        const vatHT = priceHTTotal * 0.20;
-        const volumeAlcoolPur = volume * (degree / 100);
-        const hlap = volumeAlcoolPur / 100;
-        const cssAmount = hlap * 609.80 * quantity;
-        const vatCSS = cssAmount * 0.20;
-        const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
-
-        products.push({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20 });
-      }
-      // -------------
-
-      saveProducts();
-      renderTable();
-
-      // Reset inputs
-      document.getElementById("name").value = "";
-      document.getElementById("price").value = "";
-      if (currentMode === "alcohol") {
-        document.getElementById("volume").value = "";
-        document.getElementById("degree").value = "";
-      }
-      document.getElementById("quantity").value = "";
-    }
-
-function removeLast() {
-      if (products.length === 0) return;
-      products.pop();
-      saveProducts();
-      renderTable();
-    }
-
-    function clearAll() {
-      products = [];
-      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
-      renderTable();
-    }
-
-    document.getElementById("addBtn").addEventListener("click", addProduct);
-    document.getElementById("undoBtn").addEventListener("click", removeLast);
-    document.getElementById("clearBtn").addEventListener("click", clearAll);
-
-    // Chargement initial depuis LocalStorage
-    loadProducts();
-    // Initialisation des boutons de mode
-    const _bA = document.getElementById("modeAlcohol");
-    const _bS = document.getElementById("modeSoda");
-    if(_bA) _bA.addEventListener("click", () => applyMode("alcohol"));
-    if(_bS) _bS.addEventListener("click", () => applyMode("soda"));
-    applyMode("alcohol");
-
-    renderTable();
-  </script>
-</body>
-</html>
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 out
