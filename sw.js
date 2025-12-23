@@ -1,4 +1,4 @@
-const CACHE_NAME = "apero-ttc-v2";
+const CACHE_NAME = "apero-ttc-v3";
 const PRECACHE_URLS = [
   "./",
   "index.html",
