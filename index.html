@@ -34,33 +34,28 @@
     .btn {
       transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
     }
-    .btn:active {
-      transform: translateY(1px);
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .btn { transition: none; }
-    }
+    .btn:active { transform: translateY(1px); }
+    @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
   </style>
 
-<style>
-/* UI épurée : masquage VISUEL uniquement (logique inchangée) */
-.bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
-.mt-1.text-sm.text-white\/70 { display:none !important; }
-.glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
-.mt-4.text-xs.text-white\/55 { display:none !important; }
-footer.mt-8 { display:none !important; }
-</style>
+  <style>
+    /* UI épurée : masquage VISUEL uniquement (logique inchangée) */
+    .bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
+    .mt-1.text-sm.text-white\/70 { display:none !important; }
+    .glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
+    .mt-4.text-xs.text-white\/55 { display:none !important; }
+    footer.mt-8 { display:none !important; }
+  </style>
 
-<style>
-/* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
-header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
-</style>
-
+  <style>
+    /* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
+    header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
+  </style>
 </head>
 
 <body class="min-h-screen bg-neon text-white">
 
-  <!-- ================= SPLASH ILLUSION (icône 512 + barre dessous) ================= -->
+  <!-- ================= SPLASH ILLUSION (icône 512 + barre centrée) ================= -->
   <div id="appSplash" style="
     position:fixed; inset:0; z-index:999999;
     display:grid; place-items:center;
@@ -76,11 +71,15 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
         "
         onerror="this.onerror=null;this.src='icon-192.png';"
       />
-      <div style="margin:14px auto 6px;font-size:12px;color:rgba(255,255,255,.75);text-align:right;">
+
+      <div style="margin:14px auto 6px;font-size:12px;color:rgba(255,255,255,.75);text-align:right; width:160px;">
         <span id="spPct">0%</span>
       </div>
+
+      <!-- ✅ Barre à la largeur de l’icône + centrée -->
       <div style="
-        width:100%;
+        width:160px;
+        margin:0 auto;
         height:10px;
         border-radius:999px;
         overflow:hidden;
@@ -123,7 +122,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
               </span>
             </div>
             <h1 class="mt-2 text-xl md:text-2xl font-extrabold leading-tight">
-              Calculateur TTC 
+              Calculateur TTC
             </h1>
             <p class="mt-1 text-sm text-white/70">
               Ajoute tes produits, vérifie TVA + CSS, et garde tout enregistré <span class="font-semibold text-white/80">en local</span> jusqu’à effacement.
@@ -281,7 +280,6 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       const bA = document.getElementById("modeAlcohol");
       const bS = document.getElementById("modeSoda");
 
-      // Classes (évite les remplacements fragiles)
       const activeCls = "px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/20 border border-white/15 text-sm font-semibold";
       const inactiveCls = "px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white/80";
 
@@ -299,12 +297,8 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
     }
 
     function saveProducts() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-      } catch (e) {
-        // Si stockage plein ou bloqué, on garde juste en mémoire
-        console.warn("LocalStorage indisponible :", e);
-      }
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); }
+      catch (e) { console.warn("LocalStorage indisponible :", e); }
     }
 
     function loadProducts() {
@@ -314,19 +308,15 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) products = parsed;
         }
-      } catch (e) {
-        products = [];
-      }
+      } catch (e) { products = []; }
     }
 
-    // Format € (FR)
     const _eur = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
     function fmtEUR(v){
       const n = Number(v);
       return _eur.format(isFinite(n) ? n : 0);
     }
 
-    // Rafraîchit le tableau + total général (TTC)
     function renderTable(){
       const tbody = document.getElementById("product-table");
       const totalEl = document.getElementById("grand-total");
@@ -358,7 +348,6 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       const price = parseFloat(document.getElementById("price").value);
       const quantity = parseInt(document.getElementById("quantity").value);
 
-      // Champs spécifiques alcool
       const volume = parseFloat(document.getElementById("volume").value);
       const degree = parseFloat(document.getElementById("degree").value);
 
@@ -372,11 +361,9 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
         return;
       }
 
-      // --- Calcul ---
       const priceHTTotal = price * quantity;
 
       if (currentMode === "soda") {
-        // TVA réduite (par défaut 5,5% pour boissons non alcoolisées en contenants de conservation)
         const vatRate = 0.055;
         const vatHT = priceHTTotal * vatRate;
         const cssAmount = 0;
@@ -385,7 +372,6 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
 
         products.push({ type:"soda", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate });
       } else {
-        // Alcool : logique d'origine (TVA 20% + CSS + TVA sur CSS)
         const vatHT = priceHTTotal * 0.20;
         const volumeAlcoolPur = volume * (degree / 100);
         const hlap = volumeAlcoolPur / 100;
@@ -395,12 +381,10 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
 
         products.push({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20 });
       }
-      // -------------
 
       saveProducts();
       renderTable();
 
-      // Reset inputs
       document.getElementById("name").value = "";
       document.getElementById("price").value = "";
       if (currentMode === "alcohol") {
@@ -427,28 +411,34 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
     document.getElementById("undoBtn").addEventListener("click", removeLast);
     document.getElementById("clearBtn").addEventListener("click", clearAll);
 
-    // Chargement initial depuis LocalStorage
     loadProducts();
-    // Initialisation des boutons de mode
     const _bA = document.getElementById("modeAlcohol");
     const _bS = document.getElementById("modeSoda");
     if(_bA) _bA.addEventListener("click", () => applyMode("alcohol"));
     if(_bS) _bS.addEventListener("click", () => applyMode("soda"));
     applyMode("alcohol");
-
     renderTable();
   </script>
 
   <script>
-  /* ===== SPLASH : 0 → 100% en 1.9s puis disparition ===== */
+  /* ===== SPLASH avec pause à 90% (effet Android) ===== */
   (function(){
-    const DURATION = 1900;
+    const TOTAL_MS = 1900;
+    const HOLD_AT = 90;      // palier visuel
+    const HOLD_MS = 230;     // petite pause
+    const SPLIT = 0.82;      // 82% du temps pour aller à 90%
+
     const splash = document.getElementById("appSplash");
     const bar = document.getElementById("spBar");
     const pct = document.getElementById("spPct");
     if(!splash || !bar || !pct) return;
 
+    const phase1 = Math.floor(TOTAL_MS * SPLIT);
+    const phase2 = TOTAL_MS - phase1 - HOLD_MS;
+
     let start = null;
+    let holding = false;
+    let holdStart = 0;
 
     function setP(p){
       const v = Math.max(0, Math.min(100, p));
@@ -456,20 +446,45 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       pct.textContent = Math.round(v) + "%";
     }
 
+    function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
     function step(ts){
       if(!start) start = ts;
-      const t = Math.min(1, (ts - start) / DURATION);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setP(eased * 100);
+      const elapsed = ts - start;
 
-      if(t < 1){
+      // Phase 1 : 0 -> 90%
+      if(elapsed <= phase1){
+        const t = elapsed / phase1;
+        setP(easeOutCubic(t) * HOLD_AT);
+        requestAnimationFrame(step);
+        return;
+      }
+
+      // Hold : rester à 90% un petit moment
+      if(!holding){
+        holding = true;
+        holdStart = ts;
+        setP(HOLD_AT);
+      }
+      if(ts - holdStart < HOLD_MS){
+        requestAnimationFrame(step);
+        return;
+      }
+
+      // Phase 2 : 90% -> 100%
+      const afterHold = elapsed - phase1 - HOLD_MS;
+      const t2 = Math.min(1, afterHold / Math.max(1, phase2));
+      const p = HOLD_AT + (100 - HOLD_AT) * easeOutCubic(t2);
+      setP(p);
+
+      if(t2 < 1){
         requestAnimationFrame(step);
       } else {
         setTimeout(() => {
           splash.style.transition = "opacity .25s ease";
           splash.style.opacity = "0";
           setTimeout(() => splash.remove(), 280);
-        }, 120);
+        }, 110);
       }
     }
 
@@ -484,13 +499,8 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
     if (!("serviceWorker" in navigator)) return;
 
     navigator.serviceWorker.register("./sw.js").then((reg) => {
+      if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
 
-      // Si un SW est déjà en attente, on le force à prendre la main
-      if (reg.waiting) {
-        reg.waiting.postMessage({ type: "SKIP_WAITING" });
-      }
-
-      // Quand une nouvelle version est détectée
       reg.addEventListener("updatefound", () => {
         const newWorker = reg.installing;
         if (!newWorker) return;
@@ -503,7 +513,6 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       });
     }).catch(()=>{});
 
-    // Quand le nouveau SW devient le contrôleur => on reload une seule fois
     let reloaded = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (reloaded) return;
