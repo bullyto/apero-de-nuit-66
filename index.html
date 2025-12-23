@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#050914" />
+  <meta name="theme-color" content="#0b1220" />
   <title>Calculateur TTC</title>
 
   <link rel="manifest" href="manifest.json" />
@@ -15,6 +15,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
+    /* Anti-flash blanc + cohérence splash natif */
+    html, body { background:#050914; }
+
     /* Petit polish marketing (sans dépendances) */
     .bg-neon {
       background:
@@ -34,8 +37,12 @@
     .btn {
       transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
     }
-    .btn:active { transform: translateY(1px); }
-    @media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn { transition: none; }
+    }
   </style>
 
   <style>
@@ -51,32 +58,46 @@
     /* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
     header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
   </style>
+
 </head>
 
 <body class="min-h-screen bg-neon text-white">
 
-  <!-- ================= SPLASH ILLUSION (icône 512 + barre centrée) ================= -->
+  <!-- ================= SPLASH ILLUSION (centrage optique + pause 90%) ================= -->
   <div id="appSplash" style="
     position:fixed; inset:0; z-index:999999;
     display:grid; place-items:center;
     background: radial-gradient(1200px 700px at 50% 40%, #0e1d44 0%, #050914 55%, #02040a 100%);
   ">
     <div style="width:min(340px,86vw); text-align:center;">
-      <img src="icon-512.png" alt="App icon"
-        style="
-          width:160px;height:160px;
-          border-radius:32px;
-          box-shadow:0 18px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.12);
-          object-fit:cover;
-        "
-        onerror="this.onerror=null;this.src='icon-192.png';"
-      />
 
-      <div style="margin:14px auto 6px;font-size:12px;color:rgba(255,255,255,.75);text-align:right; width:160px;">
+      <!-- Wrapper centré + correction optique -->
+      <div style="
+        width:160px;height:160px;margin:0 auto;
+        display:flex;align-items:center;justify-content:center;
+      ">
+        <img src="icon-512.png" alt="App icon"
+          style="
+            width:160px;height:160px;
+            transform: translateX(-6px);
+            border-radius:32px;
+            box-shadow:0 18px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.12);
+            object-fit:cover;
+          "
+          onerror="this.onerror=null;this.src='icon-192.png';"
+        />
+      </div>
+
+      <div style="
+        width:160px;
+        margin:14px auto 6px;
+        font-size:12px;
+        color:rgba(255,255,255,.75);
+        text-align:right;
+      ">
         <span id="spPct">0%</span>
       </div>
 
-      <!-- ✅ Barre à la largeur de l’icône + centrée -->
       <div style="
         width:160px;
         margin:0 auto;
@@ -97,7 +118,7 @@
       </div>
     </div>
   </div>
-  <!-- ============================================================================ -->
+  <!-- ================================================================================ -->
 
   <div class="max-w-6xl mx-auto px-4 py-6">
     <!-- Header -->
@@ -280,6 +301,7 @@
       const bA = document.getElementById("modeAlcohol");
       const bS = document.getElementById("modeSoda");
 
+      // Classes (évite les remplacements fragiles)
       const activeCls = "px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/20 border border-white/15 text-sm font-semibold";
       const inactiveCls = "px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white/80";
 
@@ -297,8 +319,11 @@
     }
 
     function saveProducts() {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); }
-      catch (e) { console.warn("LocalStorage indisponible :", e); }
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      } catch (e) {
+        console.warn("LocalStorage indisponible :", e);
+      }
     }
 
     function loadProducts() {
@@ -308,15 +333,19 @@
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed)) products = parsed;
         }
-      } catch (e) { products = []; }
+      } catch (e) {
+        products = [];
+      }
     }
 
+    // Format € (FR)
     const _eur = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
     function fmtEUR(v){
       const n = Number(v);
       return _eur.format(isFinite(n) ? n : 0);
     }
 
+    // Rafraîchit le tableau + total général (TTC)
     function renderTable(){
       const tbody = document.getElementById("product-table");
       const totalEl = document.getElementById("grand-total");
@@ -348,6 +377,7 @@
       const price = parseFloat(document.getElementById("price").value);
       const quantity = parseInt(document.getElementById("quantity").value);
 
+      // Champs spécifiques alcool
       const volume = parseFloat(document.getElementById("volume").value);
       const degree = parseFloat(document.getElementById("degree").value);
 
@@ -361,9 +391,11 @@
         return;
       }
 
+      // --- Calcul ---
       const priceHTTotal = price * quantity;
 
       if (currentMode === "soda") {
+        // TVA réduite
         const vatRate = 0.055;
         const vatHT = priceHTTotal * vatRate;
         const cssAmount = 0;
@@ -372,6 +404,7 @@
 
         products.push({ type:"soda", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate });
       } else {
+        // Alcool : TVA 20% + CSS + TVA sur CSS
         const vatHT = priceHTTotal * 0.20;
         const volumeAlcoolPur = volume * (degree / 100);
         const hlap = volumeAlcoolPur / 100;
@@ -381,10 +414,12 @@
 
         products.push({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20 });
       }
+      // -------------
 
       saveProducts();
       renderTable();
 
+      // Reset inputs
       document.getElementById("name").value = "";
       document.getElementById("price").value = "";
       if (currentMode === "alcohol") {
@@ -411,115 +446,121 @@
     document.getElementById("undoBtn").addEventListener("click", removeLast);
     document.getElementById("clearBtn").addEventListener("click", clearAll);
 
+    // Chargement initial depuis LocalStorage
     loadProducts();
+    // Initialisation des boutons de mode
     const _bA = document.getElementById("modeAlcohol");
     const _bS = document.getElementById("modeSoda");
     if(_bA) _bA.addEventListener("click", () => applyMode("alcohol"));
     if(_bS) _bS.addEventListener("click", () => applyMode("soda"));
     applyMode("alcohol");
+
     renderTable();
   </script>
 
   <script>
-  /* ===== SPLASH avec pause à 90% (effet Android) ===== */
-  (function(){
-    const TOTAL_MS = 1900;
-    const HOLD_AT = 90;      // palier visuel
-    const HOLD_MS = 230;     // petite pause
-    const SPLIT = 0.82;      // 82% du temps pour aller à 90%
+    /* ===== SPLASH avec easing + pause à 90% (effet Android) ===== */
+    (function(){
+      const TOTAL_MS = 1900;
+      const HOLD_AT = 90;
+      const HOLD_MS = 230;
+      const SPLIT = 0.82;
 
-    const splash = document.getElementById("appSplash");
-    const bar = document.getElementById("spBar");
-    const pct = document.getElementById("spPct");
-    if(!splash || !bar || !pct) return;
+      const splash = document.getElementById("appSplash");
+      const bar = document.getElementById("spBar");
+      const pct = document.getElementById("spPct");
+      if(!splash || !bar || !pct) return;
 
-    const phase1 = Math.floor(TOTAL_MS * SPLIT);
-    const phase2 = TOTAL_MS - phase1 - HOLD_MS;
+      const phase1 = Math.floor(TOTAL_MS * SPLIT);
+      const phase2 = TOTAL_MS - phase1 - HOLD_MS;
 
-    let start = null;
-    let holding = false;
-    let holdStart = 0;
+      let start = null;
+      let holding = false;
+      let holdStart = 0;
 
-    function setP(p){
-      const v = Math.max(0, Math.min(100, p));
-      bar.style.width = v + "%";
-      pct.textContent = Math.round(v) + "%";
-    }
-
-    function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-
-    function step(ts){
-      if(!start) start = ts;
-      const elapsed = ts - start;
-
-      // Phase 1 : 0 -> 90%
-      if(elapsed <= phase1){
-        const t = elapsed / phase1;
-        setP(easeOutCubic(t) * HOLD_AT);
-        requestAnimationFrame(step);
-        return;
+      function setP(p){
+        const v = Math.max(0, Math.min(100, p));
+        bar.style.width = v + "%";
+        pct.textContent = Math.round(v) + "%";
       }
 
-      // Hold : rester à 90% un petit moment
-      if(!holding){
-        holding = true;
-        holdStart = ts;
-        setP(HOLD_AT);
-      }
-      if(ts - holdStart < HOLD_MS){
-        requestAnimationFrame(step);
-        return;
+      function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+
+      function step(ts){
+        if(!start) start = ts;
+        const elapsed = ts - start;
+
+        // Phase 1 : 0 -> 90%
+        if(elapsed <= phase1){
+          const t = elapsed / phase1;
+          setP(easeOutCubic(t) * HOLD_AT);
+          requestAnimationFrame(step);
+          return;
+        }
+
+        // Hold : rester à 90%
+        if(!holding){
+          holding = true;
+          holdStart = ts;
+          setP(HOLD_AT);
+        }
+        if(ts - holdStart < HOLD_MS){
+          requestAnimationFrame(step);
+          return;
+        }
+
+        // Phase 2 : 90 -> 100%
+        const afterHold = elapsed - phase1 - HOLD_MS;
+        const t2 = Math.min(1, afterHold / Math.max(1, phase2));
+        const p = HOLD_AT + (100 - HOLD_AT) * easeOutCubic(t2);
+        setP(p);
+
+        if(t2 < 1){
+          requestAnimationFrame(step);
+        } else {
+          setTimeout(() => {
+            splash.style.transition = "opacity .25s ease";
+            splash.style.opacity = "0";
+            setTimeout(() => splash.remove(), 280);
+          }, 110);
+        }
       }
 
-      // Phase 2 : 90% -> 100%
-      const afterHold = elapsed - phase1 - HOLD_MS;
-      const t2 = Math.min(1, afterHold / Math.max(1, phase2));
-      const p = HOLD_AT + (100 - HOLD_AT) * easeOutCubic(t2);
-      setP(p);
-
-      if(t2 < 1){
-        requestAnimationFrame(step);
-      } else {
-        setTimeout(() => {
-          splash.style.transition = "opacity .25s ease";
-          splash.style.opacity = "0";
-          setTimeout(() => splash.remove(), 280);
-        }, 110);
-      }
-    }
-
-    setP(0);
-    requestAnimationFrame(step);
-  })();
+      setP(0);
+      requestAnimationFrame(step);
+    })();
   </script>
 
   <script>
-  /* ===== Service Worker AUTO-UPDATE + RELOAD (toujours à jour) ===== */
-  (function () {
-    if (!("serviceWorker" in navigator)) return;
+    /* ===== Service Worker AUTO-UPDATE + RELOAD (toujours à jour) ===== */
+    (function () {
+      if (!("serviceWorker" in navigator)) return;
 
-    navigator.serviceWorker.register("./sw.js").then((reg) => {
-      if (reg.waiting) reg.waiting.postMessage({ type: "SKIP_WAITING" });
+      navigator.serviceWorker.register("./sw.js").then((reg) => {
 
-      reg.addEventListener("updatefound", () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
 
-        newWorker.addEventListener("statechange", () => {
-          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-            newWorker.postMessage({ type: "SKIP_WAITING" });
-          }
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              newWorker.postMessage({ type: "SKIP_WAITING" });
+            }
+          });
         });
-      });
-    }).catch(()=>{});
+      }).catch(()=>{});
 
-    let reloaded = false;
-    navigator.serviceWorker.addEventListener("controllerchange", () => {
-      if (reloaded) return;
-      reloaded = true;
-      window.location.reload();
-    });
-  })();
+      let reloaded = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (reloaded) return;
+        reloaded = true;
+        window.location.reload();
+      });
+    })();
   </script>
 
 </body>
