@@ -1,137 +1,166 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculateur TTC</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Calculateur TTC</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="icon" href="icon-512.png" sizes="512x512" type="image/png" />
 
-<style>
-html,body{background:#050914}
-.bg-neon{
-background:
-radial-gradient(900px 500px at 15% 10%, rgba(56,189,248,.22), transparent 60%),
-radial-gradient(900px 500px at 85% 15%, rgba(34,197,94,.20), transparent 55%),
-linear-gradient(180deg,#050914,#0b1220);
-}
-.glass{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px)}
-</style>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    html, body { background:#050914; }
+    .bg-neon {
+      background:
+        radial-gradient(900px 500px at 15% 10%, rgba(56,189,248,.22), transparent 60%),
+        radial-gradient(900px 500px at 85% 15%, rgba(34,197,94,.20), transparent 55%),
+        radial-gradient(900px 600px at 50% 95%, rgba(168,85,247,.14), transparent 55%),
+        linear-gradient(180deg, #050914 0%, #0b1220 40%, #0b1220 100%);
+    }
+    .glass {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(10px);
+    }
+    .ring-neon {
+      box-shadow: 0 0 0 1px rgba(56,189,248,.18), 0 0 40px rgba(56,189,248,.12);
+    }
+    .btn { transition: transform .08s ease }
+    .btn:active { transform: translateY(1px); }
+  </style>
 </head>
 
 <body class="min-h-screen bg-neon text-white">
 
-<div class="max-w-4xl mx-auto px-4 py-6">
+<div class="max-w-6xl mx-auto px-4 py-6">
 
-<h1 class="text-2xl font-extrabold mb-4">Calculateur TTC – Alcool</h1>
+<header class="glass ring-neon rounded-3xl px-6 py-6">
+  <h1 class="text-2xl font-extrabold">Calculateur TTC</h1>
+</header>
 
-<div class="glass rounded-2xl p-5 space-y-4">
+<main class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-<input id="name" class="w-full px-4 py-2 rounded-xl bg-white/10" placeholder="Nom du produit">
+<section class="lg:col-span-5 glass ring-neon rounded-3xl p-6">
+  <input id="name" class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Nom produit">
 
-<input id="price" type="number" step="0.01" class="w-full px-4 py-2 rounded-xl bg-white/10" placeholder="Prix unitaire HT">
+  <input id="price" type="number" step="0.01"
+    class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Prix unitaire HT">
 
-<input id="volume" type="number" step="0.01" value="0.70"
-class="w-full px-4 py-2 rounded-xl bg-white/10" placeholder="Volume (L)">
+  <input id="volume" type="number" step="0.01" value="0.70"
+    class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Volume (L)">
 
-<input id="degree" type="number" step="0.1" class="w-full px-4 py-2 rounded-xl bg-white/10" placeholder="Degré (%)">
+  <input id="degree" type="number" step="0.1"
+    class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Degré (%)">
 
-<input id="quantity" type="number" class="w-full px-4 py-2 rounded-xl bg-white/10" placeholder="Quantité">
+  <input id="quantity" type="number"
+    class="w-full mb-4 px-4 py-3 rounded-xl bg-white/10" placeholder="Quantité">
 
-<button onclick="addProduct()" class="w-full bg-sky-500/30 hover:bg-sky-500/40 py-2 rounded-xl font-bold">
-➕ Ajouter
-</button>
+  <button id="addBtn" class="btn w-full rounded-xl bg-sky-400/30 py-3 font-bold">
+    ➕ Ajouter
+  </button>
+</section>
 
-</div>
+<section class="lg:col-span-7 glass ring-neon rounded-3xl p-6">
+  <table class="w-full text-sm">
+    <thead class="bg-white/10">
+      <tr>
+        <th class="p-2 text-left">Produit</th>
+        <th class="p-2 text-right">HT</th>
+        <th class="p-2 text-right">TVA</th>
+        <th class="p-2 text-right">CSS</th>
+        <th class="p-2 text-right">TVA CSS</th>
+        <th class="p-2 text-right">TTC</th>
+      </tr>
+    </thead>
+    <tbody id="product-table"></tbody>
+  </table>
 
-<table class="mt-6 w-full text-sm border border-white/10 rounded-xl overflow-hidden">
-<thead class="bg-white/10">
-<tr>
-<th class="p-2 text-left">Produit</th>
-<th class="p-2 text-right">HT</th>
-<th class="p-2 text-right">TVA</th>
-<th class="p-2 text-right">CSS</th>
-<th class="p-2 text-right">TVA CSS</th>
-<th class="p-2 text-right">TTC</th>
-</tr>
-</thead>
-<tbody id="table"></tbody>
-</table>
+  <div class="mt-4 text-right text-2xl font-extrabold">
+    Total TTC : <span id="grand-total">0,00 €</span>
+  </div>
+</section>
 
-<div class="mt-4 text-xl font-extrabold text-right">
-Total TTC : <span id="grand-total">0,00 €</span>
-</div>
-
+</main>
 </div>
 
 <script>
+const products = [];
 const TARIF_CSS = 609.80;
-const TVA = 0.20;
-let products = [];
 
 const euro = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR"});
-const round2 = n => Math.round((n+Number.EPSILON)*100)/100;
+const round2 = x => Math.round((Number(x)+Number.EPSILON)*100)/100;
 
 function parseFR(v){
-if(v==null) return NaN;
-return parseFloat(String(v).replace(",","."));
+  if(v==null) return NaN;
+  return parseFloat(String(v).trim().replace(",", "."));
 }
 
-function normalizeVolume(v){
-if(v>200) return v/1000;
-if(v>10) return v/100;
-return v;
+function normalizeVolume(x){
+  if(!isFinite(x)) return NaN;
+  if(x > 200) return x/1000;
+  if(x > 10) return x/100;
+  return x;
 }
 
-function addProduct(){
-const name = document.getElementById("name").value.trim();
-const price = parseFR(document.getElementById("price").value);
-const volume = normalizeVolume(parseFR(document.getElementById("volume").value));
-const degree = parseFR(document.getElementById("degree").value);
-const qty = parseInt(document.getElementById("quantity").value);
+document.getElementById("addBtn").addEventListener("click", () => {
+  const name = document.getElementById("name").value.trim();
+  const price = parseFR(document.getElementById("price").value);
+  const qty = Math.round(parseFR(document.getElementById("quantity").value));
 
-if(!name||!price||!volume||!degree||!qty){alert("Champs invalides");return;}
+  const volRaw = parseFR(document.getElementById("volume").value);
+  const volume = normalizeVolume(volRaw);
+  const degree = parseFR(document.getElementById("degree").value);
 
-const ht = round2(price*qty);
-const tvaHT = round2(ht*TVA);
+  if(!name || !price || !qty || !volume || !degree){
+    alert("Champs invalides");
+    return;
+  }
 
-const alcoolPur = volume*(degree/100);
-const hlap = alcoolPur/100;
+  const ht = round2(price * qty);
+  const tvaHT = round2(ht * 0.20);
 
-const css = round2(hlap*TARIF_CSS*qty);
-const tvaCSS = round2(css*TVA);
+  const alcoolPur = volume * (degree/100);
+  const hlap = alcoolPur / 100;
 
-const ttc = round2(ht+tvaHT+css+tvaCSS);
+  const css = round2(hlap * TARIF_CSS * qty);
+  const tvaCSS = round2(css * 0.20);
 
-products.push({name,ht,tvaHT,css,tvaCSS,ttc});
-render();
+  const ttc = round2(ht + tvaHT + css + tvaCSS);
 
-document.getElementById("name").value="";
-document.getElementById("price").value="";
-document.getElementById("volume").value="0.70";
-document.getElementById("degree").value="";
-document.getElementById("quantity").value="";
-}
+  products.push({name, ht, tvaHT, css, tvaCSS, ttc});
+  render();
 
-function render(){
-const tbody=document.getElementById("table");
-tbody.innerHTML="";
-let total=0;
-
-products.forEach(p=>{
-total+=p.ttc;
-tbody.innerHTML+=`
-<tr class="border-t border-white/10">
-<td class="p-2">${p.name}</td>
-<td class="p-2 text-right">${euro.format(p.ht)}</td>
-<td class="p-2 text-right">${euro.format(p.tvaHT)}</td>
-<td class="p-2 text-right">${euro.format(p.css)}</td>
-<td class="p-2 text-right">${euro.format(p.tvaCSS)}</td>
-<td class="p-2 text-right font-semibold">${euro.format(p.ttc)}</td>
-</tr>`;
+  document.getElementById("name").value="";
+  document.getElementById("price").value="";
+  document.getElementById("volume").value="0.70";
+  document.getElementById("degree").value="";
+  document.getElementById("quantity").value="";
 });
 
-document.getElementById("grand-total").textContent=euro.format(total);
+function render(){
+  const tbody = document.getElementById("product-table");
+  tbody.innerHTML="";
+  let total = 0;
+
+  products.forEach(p=>{
+    total += p.ttc;
+    tbody.innerHTML += `
+      <tr class="border-t border-white/10">
+        <td class="p-2">${p.name}</td>
+        <td class="p-2 text-right">${euro.format(p.ht)}</td>
+        <td class="p-2 text-right">${euro.format(p.tvaHT)}</td>
+        <td class="p-2 text-right">${euro.format(p.css)}</td>
+        <td class="p-2 text-right">${euro.format(p.tvaCSS)}</td>
+        <td class="p-2 text-right font-semibold">${euro.format(p.ttc)}</td>
+      </tr>`;
+  });
+
+  document.getElementById("grand-total").textContent = euro.format(total);
 }
 </script>
 
