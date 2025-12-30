@@ -1,4 +1,4 @@
-const CACHE_NAME = "Calculateur-v5"; // <-- incrémente à chaque modif importante
+const CACHE_NAME = "Calculateur-5.0"; // <-- incrémente à chaque modif importante
 const PRECACHE_URLS = [
   "./",
   "./index.html",
