@@ -11,10 +11,11 @@
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="icon" href="icon-512.png" sizes="512x512" type="image/png" />
 
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    html, body { background:#050914; }
+    /* Petit polish marketing (sans dépendances) */
     .bg-neon {
       background:
         radial-gradient(900px 500px at 15% 10%, rgba(56,189,248,.22), transparent 60%),
@@ -30,139 +31,680 @@
     .ring-neon {
       box-shadow: 0 0 0 1px rgba(56,189,248,.18), 0 0 40px rgba(56,189,248,.12);
     }
-    .btn { transition: transform .08s ease }
-    .btn:active { transform: translateY(1px); }
+    .btn {
+      transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .btn:active {
+      transform: translateY(1px);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .btn { transition: none; }
+    }
   </style>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker enregistré', reg))
+                    .catch(err => console.error('Erreur SW :', err));
+            });
+        }
+  </script>
+
+<style>
+/* UI épurée : masquage VISUEL uniquement (logique inchangée) */
+.bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
+.mt-1.text-sm.text-white\/70 { display:none !important; }
+.glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
+.mt-4.text-xs.text-white\/55 { display:none !important; }
+footer.mt-8 { display:none !important; }
+</style>
+
+
+<style>
+/* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
+header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
+</style>
+
 </head>
 
 <body class="min-h-screen bg-neon text-white">
+  <div class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <header class="glass ring-neon rounded-3xl px-5 py-5 md:px-7 md:py-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <div class="shrink-0">
+            <img
+              src="https://static.wixstatic.com/media/bc6106_2760d0ad9fe847418ba1d73666102706~mv2.png/v1/fill/w_560,h_320,al_c,lg_1,q_85,enc_avif,quality_auto/apero%20de%20nuit%20n.png"
+              alt="Apéro de Nuit 66"
+              class="h-14 w-auto drop-shadow"
+              onerror="this.onerror=null;this.src='icon-192.png';"
+            />
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wide">
+                Apéro de Nuit 66 • PWA
+              </span>
+              <span class="hidden sm:inline-flex items-center rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold tracking-wide text-emerald-200">
+                Calcul TTC + taxes
+              </span>
+            </div>
+            <h1 class="mt-2 text-xl md:text-2xl font-extrabold leading-tight">
+              Calculateur TTC 
+            </h1>
+            <p class="mt-1 text-sm text-white/70">
+              Ajoute tes produits, vérifie TVA + CSS, et garde tout enregistré <span class="font-semibold text-white/80">en local</span> jusqu’à effacement.
+            </p>
+          </div>
+        </div>
 
-<div class="max-w-6xl mx-auto px-4 py-6">
+        <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+          <div class="glass rounded-2xl px-4 py-3 text-sm">
+            <div class="text-white/60">Stockage</div>
+            <div class="font-semibold">LocalStorage (persistant)</div>
+          </div>
+          <div class="glass rounded-2xl px-4 py-3 text-sm">
+            <div class="text-white/60">Astuce</div>
+            <div class="font-semibold">“Effacer tout” remet à zéro</div>
+          </div>
+        </div>
+      </div>
+    </header>
 
-<header class="glass ring-neon rounded-3xl px-6 py-6">
-  <h1 class="text-2xl font-extrabold">Calculateur TTC</h1>
-</header>
+    <!-- Main -->
+    <main class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Form card -->
+      <section class="lg:col-span-5 glass ring-neon rounded-3xl p-5 md:p-6">
+        <div class="mt-3 flex gap-2">
+          <button id="modeAlcohol" type="button"
+            class="px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/20 border border-white/15 text-sm font-semibold">
+            Alcool
+          </button>
+          <button id="modeSoda" type="button"
+            class="px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white/80">
+            Soda
+          </button>
+        </div>
 
-<main class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-<section class="lg:col-span-5 glass ring-neon rounded-3xl p-6">
-  <input id="name" class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Nom produit">
 
-  <input id="price" type="number" step="0.01"
-    class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Prix unitaire HT">
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label for="name" class="block text-xs font-semibold text-white/70">Nom du produit</label>
+            <input id="name" type="text"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: Vodka 70 cl"
+            />
+          </div>
 
-  <input id="volume" type="number" step="0.01" value="0.70"
-    class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Volume (L)">
+          <div>
+            <label for="price" class="block text-xs font-semibold text-white/70">Prix unitaire HT (€)</label>
+            <input id="price" type="number" step="0.01" inputmode="decimal"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 12.90"
+            />
+          </div>
 
-  <input id="degree" type="number" step="0.1"
-    class="w-full mb-3 px-4 py-3 rounded-xl bg-white/10" placeholder="Degré (%)">
+          <div id="volumeField">
+            <label for="volume" class="block text-xs font-semibold text-white/70">Volume (L)</label>
+            <input id="volume" type="number" step="0.01" inputmode="decimal"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 0.70"
+            />
+          </div>
 
-  <input id="quantity" type="number"
-    class="w-full mb-4 px-4 py-3 rounded-xl bg-white/10" placeholder="Quantité">
+          <div id="degreeField">
+            <label for="degree" class="block text-xs font-semibold text-white/70">Degré (%)</label>
+            <input id="degree" type="number" step="0.1" inputmode="decimal"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 40"
+            />
+          </div>
 
-  <button id="addBtn" class="btn w-full rounded-xl bg-sky-400/30 py-3 font-bold">
-    ➕ Ajouter
-  </button>
-</section>
+          <div>
+            <label for="quantity" class="block text-xs font-semibold text-white/70">Quantité</label>
+            <input id="quantity" type="number" step="1" inputmode="numeric"
+              class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+              placeholder="Ex: 6"
+            />
+          </div>
+        </div>
 
-<section class="lg:col-span-7 glass ring-neon rounded-3xl p-6">
-  <table class="w-full text-sm">
-    <thead class="bg-white/10">
-      <tr>
-        <th class="p-2 text-left">Produit</th>
-        <th class="p-2 text-right">HT</th>
-        <th class="p-2 text-right">TVA</th>
-        <th class="p-2 text-right">CSS</th>
-        <th class="p-2 text-right">TVA CSS</th>
-        <th class="p-2 text-right">TTC</th>
-      </tr>
-    </thead>
-    <tbody id="product-table"></tbody>
-  </table>
+        <div class="mt-5 flex flex-col sm:flex-row gap-3">
+          <button id="addBtn"
+            class="btn flex-1 rounded-2xl bg-sky-400/20 hover:bg-sky-400/30 border border-sky-300/30 px-4 py-3 font-bold">
+            ➕ Ajouter
+          </button>
+          <button id="undoBtn"
+            class="btn flex-1 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 px-4 py-3 font-semibold">
+            ↩️ Annuler
+          </button>
+          <button id="clearBtn"
+            class="btn flex-1 rounded-2xl bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/30 px-4 py-3 font-semibold">
+            🗑️ Effacer tout
+          </button>
 
-  <div class="mt-4 text-right text-2xl font-extrabold">
-    Total TTC : <span id="grand-total">0,00 €</span>
+          <button id="scanBtn"
+            class="btn flex-1 rounded-2xl bg-emerald-400/15 hover:bg-emerald-400/25 border border-emerald-300/25 px-4 py-3 font-semibold">
+            📷 Scanner article
+          </button>
+        </div>
+
+        <div class="mt-4 text-xs text-white/55">
+          Les données sont stockées <span class="font-semibold text-white/70">sur ton appareil</span> (LocalStorage). Rien n’est envoyé sur internet.
+        </div>
+      </section>
+
+      <!-- Table card -->
+      <section class="lg:col-span-7 glass ring-neon rounded-3xl p-5 md:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h2 class="text-base font-bold tracking-wide text-white/90">Détail du calcul</h2>
+            <p class="mt-1 text-sm text-white/65">TVA HT, CSS, TVA CSS et total TTC.</p>
+          </div>
+
+          <div class="glass rounded-2xl px-4 py-3">
+            <div class="text-xs text-white/60">Total général TTC</div>
+            <div class="text-2xl font-extrabold tracking-tight">
+              <span id="grand-total">0.00</span> €
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 overflow-x-auto rounded-2xl border border-white/10">
+          <table class="min-w-full text-sm">
+            <thead class="bg-white/5 text-white/80">
+              <tr>
+                <th class="px-4 py-3 text-left font-semibold">Produit</th>
+                <th class="px-4 py-3 text-right font-semibold">Total HT</th>
+                <th class="px-4 py-3 text-right font-semibold">TVA</th>
+                <th class="px-4 py-3 text-right font-semibold">CSS</th>
+                <th class="px-4 py-3 text-right font-semibold">TVA CSS</th>
+                <th class="px-4 py-3 text-right font-semibold">Total TTC</th>
+              </tr>
+            </thead>
+            <tbody id="product-table" class="divide-y divide-white/10 bg-black/10">
+              <!-- rows injected -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 text-xs text-white/55">
+          💡 Conseil : si tu veux “repartir à zéro”, utilise <span class="font-semibold text-white/75">Effacer tout</span> (ça supprime aussi la sauvegarde locale).
+        </div>
+      </section>
+    </main>
+
+    <footer class="mt-8 pb-6 text-center text-xs text-white/45">
+      © Apéro de Nuit 66
+    </footer>
   </div>
-</section>
 
-</main>
-</div>
 
-<script>
-const products = [];
-const TARIF_CSS = 609.80;
+  <!-- Modal scanner (fausse pop-up + scan caméra si dispo) -->
+  <div id="scanModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="glass ring-neon w-full max-w-lg rounded-3xl p-5 md:p-6 relative">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-extrabold">Scanner article</h3>
+            <p class="mt-1 text-sm text-white/70">Vise le code-barres (si compatible) ou saisis-le. Bip + vibration à la détection.</p>
+          </div>
+          <button id="scanClose" class="btn rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 px-3 py-2 text-sm font-semibold">✖</button>
+        </div>
 
-const euro = new Intl.NumberFormat("fr-FR",{style:"currency",currency:"EUR"});
-const round2 = x => Math.round((Number(x)+Number.EPSILON)*100)/100;
+        <div class="mt-4 grid gap-3">
+          <div class="rounded-2xl overflow-hidden border border-white/10 bg-black/20">
+            <div class="relative">
+              <video id="scanVideo" class="w-full h-52 object-cover" autoplay playsinline muted></video>
+              <div class="pointer-events-none absolute inset-0 grid place-items-center">
+                <div class="w-[min(78vw,360px)] h-28 rounded-2xl border-2 border-white/70 shadow-[0_0_0_9999px_rgba(0,0,0,.35)]"></div>
+              </div>
+            </div>
+            <div class="px-4 py-3 text-sm text-white/75" id="scanStatus">Prêt.</div>
+          </div>
 
-function parseFR(v){
-  if(v==null) return NaN;
-  return parseFloat(String(v).trim().replace(",", "."));
-}
+          <div class="flex flex-wrap gap-2">
+            <button id="scanStart" class="btn rounded-2xl bg-sky-400/20 hover:bg-sky-400/30 border border-sky-300/30 px-4 py-2 font-bold text-sm">Démarrer caméra</button>
+            <button id="scanStop" class="btn rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 px-4 py-2 font-semibold text-sm" disabled>Stop</button>
+            <button id="scanTorch" class="btn rounded-2xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-300/25 px-4 py-2 font-semibold text-sm" disabled>Flash</button>
+          </div>
 
-function normalizeVolume(x){
-  if(!isFinite(x)) return NaN;
-  if(x > 200) return x/1000;
-  if(x > 10) return x/100;
-  return x;
-}
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label for="scanManual" class="block text-xs font-semibold text-white/70">Code-barres (saisie manuelle)</label>
+              <input id="scanManual" type="text" inputmode="numeric"
+                class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-emerald-300/50 focus:ring-2 focus:ring-emerald-300/20"
+                placeholder="Ex: 5449000267412" />
+            </div>
+            <div class="sm:col-span-1 flex items-end">
+              <button id="scanManualBtn"
+                class="btn w-full rounded-2xl bg-emerald-400/15 hover:bg-emerald-400/25 border border-emerald-300/25 px-4 py-3 font-bold">
+                Valider
+              </button>
+            </div>
+          </div>
 
-document.getElementById("addBtn").addEventListener("click", () => {
-  const name = document.getElementById("name").value.trim();
-  const price = parseFR(document.getElementById("price").value);
-  const qty = Math.round(parseFR(document.getElementById("quantity").value));
+          <div class="text-xs text-white/60">
+            ℹ️ Pour l’instant, ton “catalogue” de produits scannables est dans le code (jusqu’à 20 entrées). Tu pourras le remplir plus tard.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  const volRaw = parseFR(document.getElementById("volume").value);
-  const volume = normalizeVolume(volRaw);
-  const degree = parseFR(document.getElementById("degree").value);
 
-  if(!name || !price || !qty || !volume || !degree){
-    alert("Champs invalides");
-    return;
-  }
+  <script>
+    // === Stockage local (persistant) — ne change PAS la logique de calcul ===
+    const STORAGE_KEY = "apero_de_nuit_66_calculateur_ttc_products_v1";
+    let products = [];
 
-  const ht = round2(price * qty);
-  const tvaHT = round2(ht * 0.20);
+    // Mode de saisie : alcool (calcul complet) ou soda (TVA réduite, pas de CSS)
+    let currentMode = "alcohol"; // "alcohol" | "soda"
 
-  const alcoolPur = volume * (degree/100);
-  const hlap = alcoolPur / 100;
+    function applyMode(mode){
+      currentMode = (mode === "soda") ? "soda" : "alcohol";
+      const vol = document.getElementById("volumeField");
+      const deg = document.getElementById("degreeField");
+      const bA = document.getElementById("modeAlcohol");
+      const bS = document.getElementById("modeSoda");
 
-  const css = round2(hlap * TARIF_CSS * qty);
-  const tvaCSS = round2(css * 0.20);
+      // Classes (évite les remplacements fragiles)
+      const activeCls = "px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/20 border border-white/15 text-sm font-semibold";
+      const inactiveCls = "px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white/80";
 
-  const ttc = round2(ht + tvaHT + css + tvaCSS);
+      if(currentMode === "soda"){
+        if(vol) vol.style.display = "none";
+        if(deg) deg.style.display = "none";
+        if(bA) bA.className = inactiveCls;
+        if(bS) bS.className = activeCls;
+      } else {
+        if(vol) vol.style.display = "";
+        if(deg) deg.style.display = "";
+        // Pré-remplissage volume alcool (0,70 L) par défaut
+        const volInput = document.getElementById("volume");
+        if (volInput && (!volInput.value || Number(volInput.value) === 0)) volInput.value = "0.70";
+        if(bA) bA.className = activeCls;
+        if(bS) bS.className = inactiveCls;
+      }
+    }
 
-  products.push({name, ht, tvaHT, css, tvaCSS, ttc});
-  render();
 
-  document.getElementById("name").value="";
-  document.getElementById("price").value="";
-  document.getElementById("volume").value="0.70";
-  document.getElementById("degree").value="";
-  document.getElementById("quantity").value="";
-});
+    function saveProducts() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      } catch (e) {
+        // Si stockage plein ou bloqué, on garde juste en mémoire
+        console.warn("LocalStorage indisponible :", e);
+      }
+    }
 
-function render(){
-  const tbody = document.getElementById("product-table");
-  tbody.innerHTML="";
-  let total = 0;
+    function loadProducts() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) products = parsed;
+        }
+      } catch (e) {
+        products = [];
+      }
+    }
 
-  products.forEach(p=>{
-    total += p.ttc;
-    tbody.innerHTML += `
-      <tr class="border-t border-white/10">
-        <td class="p-2">${p.name}</td>
-        <td class="p-2 text-right">${euro.format(p.ht)}</td>
-        <td class="p-2 text-right">${euro.format(p.tvaHT)}</td>
-        <td class="p-2 text-right">${euro.format(p.css)}</td>
-        <td class="p-2 text-right">${euro.format(p.tvaCSS)}</td>
-        <td class="p-2 text-right font-semibold">${euro.format(p.ttc)}</td>
-      </tr>`;
-  });
+    
+    // Format € (FR)
+    const _eur = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+    function fmtEUR(v){
+      const n = Number(v);
+      return _eur.format(isFinite(n) ? n : 0);
+    }
 
-  document.getElementById("grand-total").textContent = euro.format(total);
-}
-</script>
+    // Rafraîchit le tableau + total général (TTC)
+    function renderTable(){
+      const tbody = document.getElementById("product-table");
+      const totalEl = document.getElementById("grand-total");
+      if(!tbody || !totalEl) return;
 
+      tbody.innerHTML = "";
+      let grand = 0;
+
+      for(const p of products){
+        grand += Number(p.totalTTC || 0);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-left text-white/90">${p.name ?? ""}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.priceHTTotal)}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.vatHT)}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.cssAmount)}</td>
+          <td class="px-4 py-3 text-right">${fmtEUR(p.vatCSS)}</td>
+          <td class="px-4 py-3 text-right font-semibold">${fmtEUR(p.totalTTC)}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      totalEl.textContent = fmtEUR(grand);
+    }
+
+function addProduct() {
+      const name = document.getElementById("name").value?.trim();
+      const price = parseFloat(document.getElementById("price").value);
+      const quantity = parseInt(document.getElementById("quantity").value);
+
+      // Champs spécifiques alcool
+      const volume = parseFloat(document.getElementById("volume").value);
+      const degree = parseFloat(document.getElementById("degree").value);
+
+      if (!name || isNaN(price) || isNaN(quantity)) {
+        alert("Veuillez remplir le nom, le prix HT et la quantité.");
+        return;
+      }
+
+      if (currentMode === "alcohol" && (isNaN(volume) || isNaN(degree))) {
+        alert("Mode alcool : merci de renseigner aussi le volume et le degré.");
+        return;
+      }
+
+      // --- Calcul ---
+      const priceHTTotal = price * quantity;
+
+      if (currentMode === "soda") {
+        // TVA réduite (par défaut 5,5% pour boissons non alcoolisées en contenants de conservation)
+        const vatRate = 0.055;
+        const vatHT = priceHTTotal * vatRate;
+        const cssAmount = 0;
+        const vatCSS = 0;
+        const totalTTC = priceHTTotal + vatHT;
+
+        products.push({ type:"soda", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate });
+      } else {
+        // Alcool : logique d'origine (TVA 20% + CSS + TVA sur CSS)
+        const vatHT = priceHTTotal * 0.20;
+        const volumeAlcoolPur = volume * (degree / 100);
+        const hlap = volumeAlcoolPur / 100;
+        const cssAmount = hlap * 609.80 * quantity;
+        const vatCSS = cssAmount * 0.20;
+        const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
+
+        products.push({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20 });
+      }
+      // -------------
+
+      saveProducts();
+      renderTable();
+
+      // Reset inputs
+      document.getElementById("name").value = "";
+      document.getElementById("price").value = "";
+      if (currentMode === "alcohol") {
+        document.getElementById("volume").value = "0.70";
+        document.getElementById("degree").value = "";
+      }
+      document.getElementById("quantity").value = "";
+    }
+
+function removeLast() {
+      if (products.length === 0) return;
+      products.pop();
+      saveProducts();
+      renderTable();
+    }
+
+    function clearAll() {
+      products = [];
+      try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+      renderTable();
+    }
+
+    document.getElementById("addBtn").addEventListener("click", addProduct);
+    document.getElementById("undoBtn").addEventListener("click", removeLast);
+    document.getElementById("clearBtn").addEventListener("click", clearAll);
+
+    // Chargement initial depuis LocalStorage
+    loadProducts();
+    // Initialisation des boutons de mode
+    const _bA = document.getElementById("modeAlcohol");
+    const _bS = document.getElementById("modeSoda");
+    if(_bA) _bA.addEventListener("click", () => applyMode("alcohol"));
+    if(_bS) _bS.addEventListener("click", () => applyMode("soda"));
+    applyMode("alcohol");
+
+
+    // === Catalogue codes-barres (jusqu'à 20) ===
+    // Tu pourras remplacer/compléter ces entrées plus tard (cartons d'alcools uniquement si tu veux).
+    // Champs:
+    // - barcode: string
+    // - type: "alcohol" | "soda"
+    // - name: nom du produit
+    // - bottles: nombre de bouteilles dans le carton (alcool uniquement) — chaque bouteille = 0.70 L
+    // - degree: degré d'alcool (alcool uniquement)
+    // - priceHT: tarif HT du carton (ou unité soda)
+    const PRODUCT_CATALOG = [
+      { barcode: "5449000267412", type: "soda", name: "Coca-Cola 1,25 L (test)", priceHT: 1.50 },
+      // --- Ajoute tes cartons ici ---
+      // { barcode: "1234567890123", type: "alcohol", name: "Vodka (carton)", bottles: 6, degree: 40, priceHT: 72.00 },
+      // ...
+    ];
+
+    function beep(){
+      try{
+        const ctx = new (window.AudioContext||window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = 880;
+        g.gain.value = 0.08;
+        o.start();
+        setTimeout(()=>{ o.stop(); ctx.close(); }, 120);
+      }catch(e){}
+    }
+
+    function haptic(){
+      try{ if(navigator.vibrate) navigator.vibrate(80); }catch(e){}
+    }
+
+    function findCatalogItem(barcode){
+      const b = String(barcode||"").trim();
+      return PRODUCT_CATALOG.find(x => x && x.barcode === b);
+    }
+
+    function pushLine(p){
+      products.push(p);
+      saveProducts();
+      renderTable();
+    }
+
+    function addFromCatalog(item){
+      if(!item) return;
+
+      if(item.type === "soda"){
+        // Ajout soda (TVA 5,5% / pas de CSS)
+        const qty = 1;
+        const priceHTTotal = Number(item.priceHT) * qty;
+        const vatRate = 0.055;
+        const vatHT = priceHTTotal * vatRate;
+        const cssAmount = 0;
+        const vatCSS = 0;
+        const totalTTC = priceHTTotal + vatHT;
+
+        pushLine({ type:"soda", name: item.name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate });
+        return;
+      }
+
+      // Alcool (carton): HT = prix du carton ; CSS calculée au nombre de bouteilles * 0.70 L
+      const cartons = 1;
+      const bottles = Number(item.bottles || 0);
+      const degree = Number(item.degree || 0);
+      if(!bottles || !degree){
+        alert("Entrée catalogue incomplète (bottles/degree).");
+        return;
+      }
+
+      const priceHTTotal = Number(item.priceHT) * cartons;
+      const vatHT = priceHTTotal * 0.20;
+
+      const volume = 0.70; // L par bouteille (fixe)
+      const volumeAlcoolPurParBouteille = volume * (degree / 100);
+      const hlapParBouteille = volumeAlcoolPurParBouteille / 100;
+      const totalBottles = bottles * cartons;
+
+      const cssAmount = hlapParBouteille * 609.80 * totalBottles;
+      const vatCSS = cssAmount * 0.20;
+      const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
+
+      const name = `${item.name} • carton ${bottles}x70cl • ${degree}%`;
+      pushLine({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20, bottles: totalBottles, degree });
+    }
+
+    function handleBarcode(barcode){
+      const status = document.getElementById("scanStatus");
+      const code = String(barcode||"").trim();
+      if(!code) return;
+
+      const item = findCatalogItem(code);
+      if(item){
+        status.textContent = `✅ Détecté : ${code} — ajouté (${item.name})`;
+        haptic(); beep();
+        addFromCatalog(item);
+      }else{
+        status.textContent = `❌ Inconnu : ${code} (ajoute-le dans PRODUCT_CATALOG)`;
+        haptic(); beep();
+      }
+    }
+
+    // === Modal scanner ===
+    const scanBtn = document.getElementById("scanBtn");
+    const scanModal = document.getElementById("scanModal");
+    const scanClose = document.getElementById("scanClose");
+    const scanStart = document.getElementById("scanStart");
+    const scanStop  = document.getElementById("scanStop");
+    const scanTorch = document.getElementById("scanTorch");
+    const scanManual = document.getElementById("scanManual");
+    const scanManualBtn = document.getElementById("scanManualBtn");
+    const scanVideo = document.getElementById("scanVideo");
+    const scanStatus = document.getElementById("scanStatus");
+
+    let scanStream = null;
+    let scanRaf = null;
+    let scanDetector = null;
+    let lastScan = "";
+
+    function openScanModal(){
+      if(scanModal) scanModal.classList.remove("hidden");
+      if(scanStatus) scanStatus.textContent = "Prêt.";
+      if(scanManual) scanManual.value = "";
+    }
+    function closeScanModal(){
+      stopCameraScan();
+      if(scanModal) scanModal.classList.add("hidden");
+    }
+
+    function canTorch(track){
+      try{
+        const caps = track.getCapabilities && track.getCapabilities();
+        return !!(caps && caps.torch);
+      }catch(e){ return false; }
+    }
+
+    async function toggleTorch(on){
+      if(!scanStream) return;
+      const track = scanStream.getVideoTracks()[0];
+      if(!track || !canTorch(track)) return;
+      try{
+        await track.applyConstraints({ advanced: [{ torch: !!on }] });
+      }catch(e){}
+    }
+
+    async function startCameraScan(){
+      if(!("mediaDevices" in navigator) || !navigator.mediaDevices.getUserMedia){
+        scanStatus.textContent = "Caméra indisponible sur ce navigateur.";
+        return;
+      }
+
+      if(!("BarcodeDetector" in window)){
+        scanStatus.textContent = "BarcodeDetector non supporté ici. Utilise la saisie manuelle (ou je te mets une version ZXing).";
+        return;
+      }
+
+      scanDetector = new BarcodeDetector({ formats: ["ean_13","ean_8","code_128","qr_code"] });
+
+      try{
+        scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio:false });
+        scanVideo.srcObject = scanStream;
+        scanStart.disabled = true;
+        scanStop.disabled = false;
+
+        const track = scanStream.getVideoTracks()[0];
+        scanTorch.disabled = !canTorch(track);
+
+        scanStatus.textContent = "Scan en cours…";
+
+        const loop = async () => {
+          try{
+            const codes = await scanDetector.detect(scanVideo);
+            if(codes && codes.length){
+              const val = codes[0].rawValue;
+              if(val && val !== lastScan){
+                lastScan = val;
+                handleBarcode(val);
+                // stop après détection pour effet "douchette"
+                stopCameraScan();
+                return;
+              }
+            }
+          }catch(e){}
+          scanRaf = requestAnimationFrame(loop);
+        };
+        scanRaf = requestAnimationFrame(loop);
+      }catch(e){
+        scanStatus.textContent = "Accès caméra refusé ou indisponible.";
+      }
+    }
+
+    function stopCameraScan(){
+      if(scanRaf){ cancelAnimationFrame(scanRaf); scanRaf = null; }
+      if(scanStream){
+        scanStream.getTracks().forEach(t => t.stop());
+        scanStream = null;
+      }
+      if(scanVideo) scanVideo.srcObject = null;
+      if(scanStart) scanStart.disabled = false;
+      if(scanStop) scanStop.disabled = true;
+      if(scanTorch){ scanTorch.disabled = true; scanTorch.dataset.on = "0"; scanTorch.textContent = "Flash"; }
+    }
+
+    if(scanBtn) scanBtn.addEventListener("click", openScanModal);
+    if(scanClose) scanClose.addEventListener("click", closeScanModal);
+    if(scanModal) scanModal.addEventListener("click", (e)=>{ if(e.target === scanModal.firstElementChild) closeScanModal(); });
+
+    if(scanStart) scanStart.addEventListener("click", startCameraScan);
+    if(scanStop) scanStop.addEventListener("click", stopCameraScan);
+
+    if(scanTorch) scanTorch.addEventListener("click", async ()=>{
+      const isOn = scanTorch.dataset.on === "1";
+      await toggleTorch(!isOn);
+      scanTorch.dataset.on = isOn ? "0" : "1";
+      scanTorch.textContent = isOn ? "Flash" : "Flash ✅";
+    });
+
+    if(scanManualBtn) scanManualBtn.addEventListener("click", ()=>{
+      const code = (scanManual.value || "").trim();
+      handleBarcode(code);
+    });
+    if(scanManual) scanManual.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){
+        e.preventDefault();
+        const code = (scanManual.value || "").trim();
+        handleBarcode(code);
+      }
+    });
+
+
+    renderTable();
+  </script>
 </body>
 </html>
