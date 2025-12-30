@@ -44,29 +44,27 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker enregistré', reg))
-                    .catch(err => console.error('Erreur SW :', err));
-            });
-        }
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker enregistré', reg))
+          .catch(err => console.error('Erreur SW :', err));
+      });
+    }
   </script>
 
-<style>
-/* UI épurée : masquage VISUEL uniquement (logique inchangée) */
-.bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
-.mt-1.text-sm.text-white\/70 { display:none !important; }
-.glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
-.mt-4.text-xs.text-white\/55 { display:none !important; }
-footer.mt-8 { display:none !important; }
-</style>
+  <style>
+    /* UI épurée : masquage VISUEL uniquement (logique inchangée) */
+    .bg-white\/10.px-3.py-1.text-xs.font-semibold.tracking-wide { display:none !important; }
+    .mt-1.text-sm.text-white\/70 { display:none !important; }
+    .glass.rounded-2xl.px-4.py-3.text-sm { display:none !important; }
+    .mt-4.text-xs.text-white\/55 { display:none !important; }
+    footer.mt-8 { display:none !important; }
+  </style>
 
-
-<style>
-/* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
-header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
-</style>
-
+  <style>
+    /* UI épurée : supprimer l'espace des cartes masquées (stockage/astuce) */
+    header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !important; }
+  </style>
 </head>
 
 <body class="min-h-screen bg-neon text-white">
@@ -93,7 +91,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
               </span>
             </div>
             <h1 class="mt-2 text-xl md:text-2xl font-extrabold leading-tight">
-              Calculateur TTC 
+              Calculateur TTC
             </h1>
             <p class="mt-1 text-sm text-white/70">
               Ajoute tes produits, vérifie TVA + CSS, et garde tout enregistré <span class="font-semibold text-white/80">en local</span> jusqu’à effacement.
@@ -128,8 +126,6 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
             Soda
           </button>
         </div>
-
-
 
         <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="sm:col-span-2">
@@ -209,7 +205,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
           <div class="glass rounded-2xl px-4 py-3">
             <div class="text-xs text-white/60">Total général TTC</div>
             <div class="text-2xl font-extrabold tracking-tight">
-              <span id="grand-total">0.00</span> €
+              <span id="grand-total">0.00</span>
             </div>
           </div>
         </div>
@@ -243,8 +239,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
     </footer>
   </div>
 
-
-  <!-- Modal scanner (fausse pop-up + scan caméra si dispo) -->
+  <!-- Modal scanner -->
   <div id="scanModal" class="fixed inset-0 z-50 hidden">
     <div class="absolute inset-0 bg-black/70"></div>
     <div class="absolute inset-0 flex items-center justify-center p-4">
@@ -297,6 +292,83 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
     </div>
   </div>
 
+  <!-- Modal confirmation carton alcool -->
+  <div id="cartonModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/70"></div>
+
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="glass ring-neon w-full max-w-lg rounded-3xl p-5 md:p-6 relative">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h3 class="text-lg font-extrabold">Confirmer le carton</h3>
+            <p class="mt-1 text-sm text-white/70">Ajuste les infos (mémorisé en local), puis valide pour l’ajout au calcul.</p>
+          </div>
+          <button id="cartonClose"
+            class="btn rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 px-3 py-2 text-sm font-semibold">✖</button>
+        </div>
+
+        <div class="mt-4 grid gap-3">
+          <div class="glass rounded-2xl p-4 border border-white/10">
+            <div class="text-xs text-white/60">Produit</div>
+            <div id="cartonName" class="mt-1 font-bold text-white/90">—</div>
+            <div id="cartonBarcode" class="mt-1 text-xs text-white/55">—</div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-white/70">Prix HT du carton (€)</label>
+              <input id="cartonPriceHT" type="number" step="0.01" inputmode="decimal"
+                class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+                placeholder="Ex: 72.00" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-white/70">Nombre de cartons</label>
+              <input id="cartonCartons" type="number" step="1" inputmode="numeric"
+                class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+                value="1" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-white/70">Bouteilles / carton</label>
+              <input id="cartonBottles" type="number" step="1" inputmode="numeric"
+                class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+                placeholder="Ex: 6" />
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-white/70">Volume / bouteille (L)</label>
+              <input id="cartonVolume" type="number" step="0.01" inputmode="decimal"
+                class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+                value="0.70" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-semibold text-white/70">Degré (%)</label>
+              <input id="cartonDegree" type="number" step="0.1" inputmode="decimal"
+                class="mt-1 w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-sky-300/50 focus:ring-2 focus:ring-sky-300/20"
+                placeholder="Ex: 40" />
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2">
+            <button id="cartonValidate"
+              class="btn flex-1 rounded-2xl bg-emerald-400/15 hover:bg-emerald-400/25 border border-emerald-300/25 px-4 py-3 font-bold">
+              ✅ Valider et ajouter
+            </button>
+            <button id="cartonCancel"
+              class="btn flex-1 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 px-4 py-3 font-semibold">
+              Annuler
+            </button>
+          </div>
+
+          <div class="text-xs text-white/60">
+            ℹ️ Les modifications (prix, colissage, degré, volume) sont enregistrées en local par code-barres.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // === Stockage local (persistant) — ne change PAS la logique de calcul ===
@@ -313,7 +385,6 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       const bA = document.getElementById("modeAlcohol");
       const bS = document.getElementById("modeSoda");
 
-      // Classes (évite les remplacements fragiles)
       const activeCls = "px-4 py-2 rounded-2xl bg-white/15 hover:bg-white/20 border border-white/15 text-sm font-semibold";
       const inactiveCls = "px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-semibold text-white/80";
 
@@ -333,12 +404,10 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       }
     }
 
-
     function saveProducts() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
       } catch (e) {
-        // Si stockage plein ou bloqué, on garde juste en mémoire
         console.warn("LocalStorage indisponible :", e);
       }
     }
@@ -355,7 +424,6 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       }
     }
 
-    
     // Format € (FR)
     const _eur = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
     function fmtEUR(v){
@@ -390,7 +458,7 @@ header .flex.flex-col.sm\:flex-row.gap-2.sm\:items-center { display:none !import
       totalEl.textContent = fmtEUR(grand);
     }
 
-function addProduct() {
+    function addProduct() {
       const name = document.getElementById("name").value?.trim();
       const price = parseFloat(document.getElementById("price").value);
       const quantity = parseInt(document.getElementById("quantity").value);
@@ -409,11 +477,9 @@ function addProduct() {
         return;
       }
 
-      // --- Calcul ---
       const priceHTTotal = price * quantity;
 
       if (currentMode === "soda") {
-        // TVA réduite (par défaut 5,5% pour boissons non alcoolisées en contenants de conservation)
         const vatRate = 0.055;
         const vatHT = priceHTTotal * vatRate;
         const cssAmount = 0;
@@ -422,22 +488,21 @@ function addProduct() {
 
         products.push({ type:"soda", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate });
       } else {
-        // Alcool : logique d'origine (TVA 20% + CSS + TVA sur CSS)
         const vatHT = priceHTTotal * 0.20;
+
         const volumeAlcoolPur = volume * (degree / 100);
         const hlap = volumeAlcoolPur / 100;
         const cssAmount = hlap * 609.80 * quantity;
+
         const vatCSS = cssAmount * 0.20;
         const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
 
         products.push({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20 });
       }
-      // -------------
 
       saveProducts();
       renderTable();
 
-      // Reset inputs
       document.getElementById("name").value = "";
       document.getElementById("price").value = "";
       if (currentMode === "alcohol") {
@@ -447,7 +512,7 @@ function addProduct() {
       document.getElementById("quantity").value = "";
     }
 
-function removeLast() {
+    function removeLast() {
       if (products.length === 0) return;
       products.pop();
       saveProducts();
@@ -473,21 +538,19 @@ function removeLast() {
     if(_bS) _bS.addEventListener("click", () => applyMode("soda"));
     applyMode("alcohol");
 
-
     // === Catalogue codes-barres (jusqu'à 20) ===
-    // Tu pourras remplacer/compléter ces entrées plus tard (cartons d'alcools uniquement si tu veux).
     // Champs:
     // - barcode: string
     // - type: "alcohol" | "soda"
     // - name: nom du produit
-    // - bottles: nombre de bouteilles dans le carton (alcool uniquement) — chaque bouteille = 0.70 L
-    // - degree: degré d'alcool (alcool uniquement)
-    // - priceHT: tarif HT du carton (ou unité soda)
+    // - bottles: nb bouteilles dans le carton (alcool)
+    // - degree: degré d'alcool (alcool)
+    // - priceHT: tarif HT du carton (alcool) ou unité soda
+    // - volume: volume par bouteille en L (optionnel, défaut 0.70)
     const PRODUCT_CATALOG = [
       { barcode: "5449000267412", type: "soda", name: "Coca-Cola 1,25 L (test)", priceHT: 1.50 },
-      // --- Ajoute tes cartons ici ---
-      // { barcode: "1234567890123", type: "alcohol", name: "Vodka (carton)", bottles: 6, degree: 40, priceHT: 72.00 },
-      // ...
+      // Exemple alcool :
+      // { barcode: "1234567890123", type: "alcohol", name: "Poliakov (carton)", bottles: 6, degree: 37.5, priceHT: 45.84, volume: 0.70 },
     ];
 
     function beep(){
@@ -522,7 +585,6 @@ function removeLast() {
       if(!item) return;
 
       if(item.type === "soda"){
-        // Ajout soda (TVA 5,5% / pas de CSS)
         const qty = 1;
         const priceHTTotal = Number(item.priceHT) * qty;
         const vatRate = 0.055;
@@ -535,10 +597,12 @@ function removeLast() {
         return;
       }
 
-      // Alcool (carton): HT = prix du carton ; CSS calculée au nombre de bouteilles * 0.70 L
+      // Alcool (carton) - ajout direct (non utilisé si on passe par modal, mais on garde)
       const cartons = 1;
       const bottles = Number(item.bottles || 0);
       const degree = Number(item.degree || 0);
+      const volume = Number(item.volume ?? 0.70);
+
       if(!bottles || !degree){
         alert("Entrée catalogue incomplète (bottles/degree).");
         return;
@@ -547,7 +611,6 @@ function removeLast() {
       const priceHTTotal = Number(item.priceHT) * cartons;
       const vatHT = priceHTTotal * 0.20;
 
-      const volume = 0.70; // L par bouteille (fixe)
       const volumeAlcoolPurParBouteille = volume * (degree / 100);
       const hlapParBouteille = volumeAlcoolPurParBouteille / 100;
       const totalBottles = bottles * cartons;
@@ -556,20 +619,173 @@ function removeLast() {
       const vatCSS = cssAmount * 0.20;
       const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
 
-      const name = `${item.name} • carton ${bottles}x70cl • ${degree}%`;
-      pushLine({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20, bottles: totalBottles, degree });
+      const name = `${item.name} • carton ${bottles}x${String(volume).replace(".", ",")}L • ${degree}%`;
+      pushLine({ type:"alcohol", name, priceHTTotal, vatHT, cssAmount, vatCSS, totalTTC, vatRate:0.20, bottles: totalBottles, degree, volume });
     }
 
+    // === Overrides catalogue (LocalStorage) : mémoriser tes modifs par code-barres ===
+    const CATALOG_OVERRIDES_KEY = "apero_de_nuit_66_catalog_overrides_v1";
+
+    function loadCatalogOverrides(){
+      try{
+        const raw = localStorage.getItem(CATALOG_OVERRIDES_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return (parsed && typeof parsed === "object") ? parsed : {};
+      }catch(e){
+        return {};
+      }
+    }
+    function saveCatalogOverrides(obj){
+      try{
+        localStorage.setItem(CATALOG_OVERRIDES_KEY, JSON.stringify(obj || {}));
+      }catch(e){}
+    }
+
+    function getCatalogItemWithOverride(barcode){
+      const base = findCatalogItem(barcode);
+      if(!base) return null;
+
+      const overrides = loadCatalogOverrides();
+      const o = overrides[String(barcode)] || null;
+
+      if(!o) return { ...base, volume: (base.volume ?? 0.70) };
+
+      return {
+        ...base,
+        priceHT: (o.priceHT != null) ? o.priceHT : base.priceHT,
+        bottles: (o.bottles != null) ? o.bottles : base.bottles,
+        degree:  (o.degree  != null) ? o.degree  : base.degree,
+        volume:  (o.volume  != null) ? o.volume  : (base.volume ?? 0.70)
+      };
+    }
+
+    // === Modal confirmation carton alcool ===
+    const cartonModal = document.getElementById("cartonModal");
+    const cartonClose = document.getElementById("cartonClose");
+    const cartonCancel = document.getElementById("cartonCancel");
+    const cartonValidate = document.getElementById("cartonValidate");
+
+    const cartonName = document.getElementById("cartonName");
+    const cartonBarcodeEl = document.getElementById("cartonBarcode");
+    const cartonPriceHT = document.getElementById("cartonPriceHT");
+    const cartonCartons = document.getElementById("cartonCartons");
+    const cartonBottles = document.getElementById("cartonBottles");
+    const cartonVolume = document.getElementById("cartonVolume");
+    const cartonDegree = document.getElementById("cartonDegree");
+
+    let pendingCarton = null; // { barcode, name, priceHT, bottles, degree, volume }
+
+    function openCartonModal(item, barcode){
+      pendingCarton = { ...item, barcode: String(barcode) };
+
+      if(cartonName) cartonName.textContent = item.name || "—";
+      if(cartonBarcodeEl) cartonBarcodeEl.textContent = `Code-barres : ${barcode}`;
+
+      if(cartonPriceHT) cartonPriceHT.value = (item.priceHT ?? "");
+      if(cartonBottles) cartonBottles.value = (item.bottles ?? "");
+      if(cartonDegree)  cartonDegree.value  = (item.degree  ?? "");
+      if(cartonVolume)  cartonVolume.value  = (item.volume  ?? 0.70);
+      if(cartonCartons) cartonCartons.value = "1";
+
+      if(cartonModal) cartonModal.classList.remove("hidden");
+    }
+
+    function closeCartonModal(){
+      pendingCarton = null;
+      if(cartonModal) cartonModal.classList.add("hidden");
+    }
+
+    if(cartonClose) cartonClose.addEventListener("click", closeCartonModal);
+    if(cartonCancel) cartonCancel.addEventListener("click", closeCartonModal);
+    if(cartonModal){
+      cartonModal.addEventListener("click", (e)=>{
+        const overlay = cartonModal.firstElementChild; // le div bg noir
+        if(e.target === overlay) closeCartonModal();
+      });
+    }
+
+    if(cartonValidate){
+      cartonValidate.addEventListener("click", ()=>{
+        if(!pendingCarton) return;
+
+        const barcode = pendingCarton.barcode;
+
+        const priceHT = Number(cartonPriceHT?.value);
+        const cartons = Math.max(1, parseInt(cartonCartons?.value || "1", 10));
+        const bottles = Math.max(1, parseInt(cartonBottles?.value || "0", 10));
+        const degree  = Number(cartonDegree?.value);
+        const volume  = Number(cartonVolume?.value);
+
+        if(!isFinite(priceHT) || priceHT <= 0){
+          alert("Prix HT du carton invalide.");
+          return;
+        }
+        if(!isFinite(degree) || degree <= 0){
+          alert("Degré invalide.");
+          return;
+        }
+        if(!isFinite(volume) || volume <= 0){
+          alert("Volume par bouteille invalide.");
+          return;
+        }
+
+        // 1) Sauver les overrides (pour ne plus retaper)
+        const overrides = loadCatalogOverrides();
+        overrides[barcode] = { priceHT, bottles, degree, volume };
+        saveCatalogOverrides(overrides);
+
+        // 2) Ajouter au calcul (cartons * prix HT ; CSS au nb bouteilles total)
+        const totalBottles = bottles * cartons;
+
+        const priceHTTotal = priceHT * cartons;
+        const vatHT = priceHTTotal * 0.20;
+
+        const volumeAlcoolPurParBouteille = volume * (degree / 100);
+        const hlapParBouteille = volumeAlcoolPurParBouteille / 100;
+
+        const cssAmount = hlapParBouteille * 609.80 * totalBottles;
+        const vatCSS = cssAmount * 0.20;
+        const totalTTC = priceHTTotal + vatHT + cssAmount + vatCSS;
+
+        const name = `${pendingCarton.name} • carton ${bottles}x${String(volume).replace(".", ",")}L • ${degree}% • x${cartons}`;
+
+        pushLine({
+          type:"alcohol",
+          name,
+          priceHTTotal,
+          vatHT,
+          cssAmount,
+          vatCSS,
+          totalTTC,
+          vatRate:0.20,
+          bottles: totalBottles,
+          degree,
+          volume,
+          cartons,
+          barcode
+        });
+
+        closeCartonModal();
+      });
+    }
+
+    // === Scanner / BarcodeDetector ===
     function handleBarcode(barcode){
       const status = document.getElementById("scanStatus");
       const code = String(barcode||"").trim();
       if(!code) return;
 
-      const item = findCatalogItem(code);
+      const item = getCatalogItemWithOverride(code);
+
       if(item){
-        status.textContent = `✅ Détecté : ${code} — ajouté (${item.name})`;
+        status.textContent = `✅ Détecté : ${code} — trouvé (${item.name})`;
         haptic(); beep();
-        addFromCatalog(item);
+
+        if(item.type === "alcohol"){
+          openCartonModal(item, code); // pop-up avant ajout
+        } else {
+          addFromCatalog(item); // soda direct
+        }
       }else{
         status.textContent = `❌ Inconnu : ${code} (ajoute-le dans PRODUCT_CATALOG)`;
         haptic(); beep();
@@ -651,8 +867,7 @@ function removeLast() {
               if(val && val !== lastScan){
                 lastScan = val;
                 handleBarcode(val);
-                // stop après détection pour effet "douchette"
-                stopCameraScan();
+                stopCameraScan(); // effet "douchette"
                 return;
               }
             }
@@ -679,7 +894,6 @@ function removeLast() {
 
     if(scanBtn) scanBtn.addEventListener("click", openScanModal);
     if(scanClose) scanClose.addEventListener("click", closeScanModal);
-    if(scanModal) scanModal.addEventListener("click", (e)=>{ if(e.target === scanModal.firstElementChild) closeScanModal(); });
 
     if(scanStart) scanStart.addEventListener("click", startCameraScan);
     if(scanStop) scanStop.addEventListener("click", stopCameraScan);
@@ -703,8 +917,8 @@ function removeLast() {
       }
     });
 
-
     renderTable();
   </script>
 </body>
 </html>
+```0
