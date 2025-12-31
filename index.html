@@ -529,39 +529,59 @@
     if(_bS) _bS.addEventListener("click", () => applyMode("soda"));
     applyMode("alcohol");
 
-    // === Catalogue codes-barres (20 cartons + 1 soda test) ===
-    // Tous en 70cl (volume: 0.70). priceHT est volontairement null -> tu règles une fois via la pop-up, c'est mémorisé.
+    // === Catalogue codes-barres (alcools + softs) ===
+    // Tous les alcools listés ici sont en 70cl (volume: 0.70).
+    // priceHT est volontairement null -> tu règles une fois via la pop-up, c'est mémorisé.
     const PRODUCT_CATALOG = [
       // RHUM
-      { barcode: "2000000000001", type: "alcohol", name: "Captain Morgan (carton)",        bottles: 6, degree: 35,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000002", type: "alcohol", name: "Havana Club Especial (carton)",  bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
+      { barcode: "5000281015249", type: "alcohol", name: "Captain Morgan Spiced Gold (carton)", bottles: 6, degree: 35,   priceHT: null, volume: 0.70 },
+      // Havana Club Especial : EAN non fourni/confirmé ici -> garde un code interne si besoin
+      { barcode: "2000000000002", type: "alcohol", name: "Havana Club Especial (carton)",      bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
 
       // LIQUEURS
-      { barcode: "2000000000003", type: "alcohol", name: "Jägermeister (carton)",          bottles: 6, degree: 35,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000004", type: "alcohol", name: "Get 27 (carton)",                bottles: 6, degree: 21,   priceHT: null, volume: 0.70 },
+      // ⚠️ Jägermeister 70cl : EAN non confirmé publiquement (scan bouteille requis)
+      { barcode: "2000000000003", type: "alcohol", name: "Jägermeister 70cl (carton) [EAN à confirmer]", bottles: 6, degree: 35, priceHT: null, volume: 0.70 },
+      { barcode: "7610113009214", type: "alcohol", name: "GET 27 70cl (carton)",               bottles: 6, degree: 17.9, priceHT: null, volume: 0.70 },
 
       // ANISÉS
-      { barcode: "2000000000005", type: "alcohol", name: "Ricard (carton)",                bottles: 6, degree: 45,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000006", type: "alcohol", name: "Pastis (carton)",                bottles: 6, degree: 45,   priceHT: null, volume: 0.70 },
+      // Ricard : EAN non fourni/confirmé ici
+      { barcode: "2000000000005", type: "alcohol", name: "Ricard 70cl (carton) [EAN à ajouter]", bottles: 6, degree: 45, priceHT: null, volume: 0.70 },
+      { barcode: "3047100000247", type: "alcohol", name: "Pastis 51 70cl (carton)",            bottles: 6, degree: 45,   priceHT: null, volume: 0.70 },
 
       // VODKAS
-      { barcode: "2000000000007", type: "alcohol", name: "Poliakov (carton)",              bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
-      { barcode: "2000000000008", type: "alcohol", name: "Absolut (carton)",               bottles: 6, degree: 40,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000014", type: "alcohol", name: "Ciroc Redberry (carton)",        bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
-      { barcode: "2000000000015", type: "alcohol", name: "Ciroc Apple (carton)",           bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
-      { barcode: "2000000000016", type: "alcohol", name: "Ciroc Classic (carton)",         bottles: 6, degree: 40,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000017", type: "alcohol", name: "Gibson (carton)",                bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
-      { barcode: "2000000000018", type: "alcohol", name: "Gordon's (carton)",              bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
+      { barcode: "3147690130223", type: "alcohol", name: "Poliakov 70cl (carton)",             bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
+      { barcode: "7312040017067", type: "alcohol", name: "Absolut 70cl (carton)",              bottles: 6, degree: 40,   priceHT: null, volume: 0.70 },
+
+      // CIROC : EAN non fournis/confirmés ici -> garde codes internes
+      { barcode: "2000000000014", type: "alcohol", name: "Ciroc Redberry 70cl (carton) [EAN à ajouter]", bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
+      { barcode: "2000000000015", type: "alcohol", name: "Ciroc Apple 70cl (carton) [EAN à ajouter]",    bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
+      { barcode: "2000000000016", type: "alcohol", name: "Ciroc Classic 70cl (carton) [EAN à ajouter]",  bottles: 6, degree: 40,   priceHT: null, volume: 0.70 },
+
+      // GIN
+      // Gibson : EAN non confirmé publiquement (scan bouteille requis)
+      { barcode: "2000000000017", type: "alcohol", name: "Gibson’s Gin 70cl (carton) [EAN à confirmer]", bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
+      { barcode: "5000289925440", type: "alcohol", name: "Gordon’s Gin 70cl (carton)",         bottles: 6, degree: 37.5, priceHT: null, volume: 0.70 },
 
       // WHISKYS
-      { barcode: "2000000000009", type: "alcohol", name: "William Peel (carton)",          bottles: 6, degree: 40,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000010", type: "alcohol", name: "Label 5 (carton)",               bottles: 6, degree: 40,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000011", type: "alcohol", name: "Ballantine's (carton)",          bottles: 6, degree: 40,   priceHT: null, volume: 0.70 },
-      { barcode: "2000000000012", type: "alcohol", name: "Jack Daniel's Tennessee (carton)",bottles: 6, degree: 40,  priceHT: null, volume: 0.70 },
-      { barcode: "2000000000013", type: "alcohol", name: "Jack Daniel's Honey (carton)",   bottles: 6, degree: 35,   priceHT: null, volume: 0.70 },
+      // ⚠️ William Peel : chez toi c’est carton de 12
+      { barcode: "5010327000148", type: "alcohol", name: "William Peel 70cl (carton)",         bottles: 12, degree: 40,  priceHT: null, volume: 0.70 },
+      { barcode: "3147690128573", type: "alcohol", name: "Label 5 Classic Black 70cl (carton)", bottles: 6, degree: 40,  priceHT: null, volume: 0.70 },
 
-      // SODA (test)
-      { barcode: "5449000267412", type: "soda", name: "Coca-Cola 1,25 L (test)", priceHT: 1.50 },
+      // Ballantine's : EAN non fourni/confirmé ici
+      { barcode: "2000000000011", type: "alcohol", name: "Ballantine's 70cl (carton) [EAN à ajouter]", bottles: 6, degree: 40, priceHT: null, volume: 0.70 },
+
+      // Jack Daniel's
+      { barcode: "3099873045864", type: "alcohol", name: "Jack Daniel’s Old No.7 70cl (carton)", bottles: 6, degree: 40, priceHT: null, volume: 0.70 },
+      // Variante possible selon marché (si tu scannes celui-là sur tes bouteilles)
+      { barcode: "5099873089798", type: "alcohol", name: "Jack Daniel’s Old No.7 70cl (variante marché) (carton)", bottles: 6, degree: 40, priceHT: null, volume: 0.70 },
+      { barcode: "5099873001370", type: "alcohol", name: "Jack Daniel’s Honey 70cl (carton)",   bottles: 6, degree: 35, priceHT: null, volume: 0.70 },
+
+      // SOFTS
+      { barcode: "5449000054227", type: "soda", name: "Coca-Cola 1,25 L", priceHT: null },
+
+      // ÉNERGIE
+      // Crazy Tiger : code provisoire (carton/logistique) en attente de l’EAN bouteille définitif
+      { barcode: "3760205930171", type: "soda", name: "Crazy Tiger 1L PET (carton x6) — PROVISOIRE", priceHT: null },
     ];
 
     function beep(){
